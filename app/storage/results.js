@@ -16,6 +16,7 @@ export function getResultById(id) {
   const row = getDatabase().prepare('SELECT * FROM results WHERE id = ?').get(id);
   return row ? { ...row, data: JSON.parse(row.result_json) } : null;
 }
+<<<<<<< HEAD
 
 export function getResultsByRunId(runId) {
   return getDatabase().prepare('SELECT * FROM results WHERE run_id = ? ORDER BY created_at ASC').all(runId)
@@ -29,3 +30,5 @@ export function getFinalOutputByRunId(runId) {
 export function getStepOutputByRunIdAndStepId(runId, stepId) {
   return getResultsByRunId(runId).find((result) => result.data?.stepId === stepId) ?? null;
 }
+=======
+>>>>>>> origin/main

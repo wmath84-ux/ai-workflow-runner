@@ -38,9 +38,12 @@ export async function saveStepResult({ workflowName, runId, step, resolvedPrompt
   const basePath = path.join(outputDirectory, safeName(step.id));
   const markdownPath = `${basePath}.md`;
   const jsonPath = `${basePath}.json`;
+<<<<<<< HEAD
   jsonPayload.markdownPath = markdownPath;
   jsonPayload.jsonPath = jsonPath;
   jsonPayload.outputFolder = outputDirectory;
+=======
+>>>>>>> origin/main
   await fs.writeFile(markdownPath, markdown, 'utf8');
   await fs.writeFile(jsonPath, JSON.stringify(jsonPayload, null, 2), 'utf8');
 
@@ -48,6 +51,7 @@ export async function saveStepResult({ workflowName, runId, step, resolvedPrompt
   return { markdownPath, jsonPath };
 }
 
+<<<<<<< HEAD
 export async function saveGroupMetadata({ workflowName, runId, group, metadata }) {
   const outputDirectory = path.join(getRunOutputDirectory(workflowName, runId), 'groups');
   await fs.mkdir(outputDirectory, { recursive: true });
@@ -56,13 +60,19 @@ export async function saveGroupMetadata({ workflowName, runId, group, metadata }
   return groupPath;
 }
 
+=======
+>>>>>>> origin/main
 export async function saveFinalOutput({ workflowName, runId, completedOutputs }) {
   const outputDirectory = getRunOutputDirectory(workflowName, runId);
   await fs.mkdir(outputDirectory, { recursive: true });
   const finalPath = path.join(outputDirectory, 'final-output.md');
   const sections = Object.entries(completedOutputs).map(([key, value]) => `## ${key}\n${escapeMarkdown(value)}`).join('\n\n');
   await fs.writeFile(finalPath, `# Final Output: ${workflowName}\n\n${sections}\n`, 'utf8');
+<<<<<<< HEAD
   saveResult({ runId, title: `${workflowName} final output`, status: 'saved', data: { workflowName, runId, completedOutputs, finalOutputPath: finalPath, outputFolder: outputDirectory }, filePath: finalPath });
+=======
+  saveResult({ runId, title: `${workflowName} final output`, status: 'saved', data: { workflowName, runId, completedOutputs }, filePath: finalPath });
+>>>>>>> origin/main
   return finalPath;
 }
 
