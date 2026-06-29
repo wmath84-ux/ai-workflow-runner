@@ -9,7 +9,12 @@
     "build": "vite build",
     "start": "electron .",
     "electron:dev": "npm run dev",
-    "electron:build": "npm run build"
+    "electron:build": "npm run dist",
+    "pack": "npm run build && electron-builder --dir",
+    "dist": "npm run build && electron-builder",
+    "lint": "node app/build/qaCheck.js",
+    "test:smoke": "node app/build/qaCheck.js",
+    "qa:check": "node app/build/qaCheck.js"
   },
   "dependencies": {
     "better-sqlite3": "latest",
@@ -23,6 +28,30 @@
     "@vitejs/plugin-react": "latest",
     "concurrently": "latest",
     "cross-env": "latest",
-    "wait-on": "latest"
+    "wait-on": "latest",
+    "electron-builder": "latest"
+  },
+  "build": {
+    "appId": "local.ai-workflow-runner",
+    "productName": "AI Workflow Runner",
+    "files": [
+      "app/**",
+      "dist/**",
+      "workflows/**",
+      "README.md",
+      "USER_GUIDE.md",
+      "TROUBLESHOOTING.md",
+      "RELEASE_CHECKLIST.md",
+      "package.json"
+    ],
+    "directories": {
+      "output": "release"
+    },
+    "extraResources": [
+      "workflows"
+    ],
+    "asar": true,
+    "npmRebuild": false,
+    "publish": null
   }
 }

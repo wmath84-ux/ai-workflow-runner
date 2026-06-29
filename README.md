@@ -224,3 +224,100 @@ Command 6 Status:
 - Backup, diagnostics, and workflow package files are JSON bundle files with `.zip`/`.aiworkflowpkg`-style extensions; true compressed archive packaging can be added during production packaging polish.
 - Repair tools are intentionally conservative and do not delete outputs or user data automatically.
 - Restore supports safe database/workflow restore paths first; richer merge conflict UI can be expanded later.
+
+## Current App Status
+
+- Personal desktop AI workflow automation app.
+- Uses Electron + React + Node.js + Playwright + SQLite.
+- Supports persistent browser profile.
+- Supports manual login to AI websites.
+- Supports mock, ChatGPT, Gemini, and Generic connectors.
+- Supports sequential and parallel workflows.
+- Supports workflow templates, prompt library, variables, run history, exports, backups, diagnostics, and health checks.
+
+## Command 10 Status
+
+- First-run onboarding and setup checklist added.
+- Connector readiness checks added for Mock, ChatGPT, Gemini, and Generic.
+- Run preflight checks added before workflow execution.
+- Command palette and keyboard shortcut registry added.
+- Help page, user guide, troubleshooting guide, and release checklist added.
+- Production packaging metadata and lightweight QA checks added.
+
+## Install
+
+```bash
+npm install
+npx playwright install chromium
+```
+
+## Run in development
+
+```bash
+npm run dev
+```
+
+## Build production app
+
+```bash
+npm run build
+npm run qa:check
+```
+
+## First setup
+
+Open Onboarding / Setup Guide, confirm folders, launch the browser, manually login to ChatGPT/Gemini if needed, run connector readiness checks, and run the mock sample first.
+
+## Manual login setup
+
+Use Browser Panel to launch the persistent browser and open ChatGPT or Gemini. Complete login and verification manually in the visible browser. The app never automates login, CAPTCHA, verification, or rate-limit bypasses.
+
+## Running first workflow
+
+Open Run Panel, paste or select a workflow, fill inputs, validate, run preflight checks, and then Run Now or Add To Queue.
+
+## Creating workflows
+
+Use Workflow Editor, Workflow Library, or Workflow Templates. Validate JSON and variable references before running.
+
+## Using templates
+
+Open Workflow Templates, choose a template, fill the dynamic input form, preview the workflow, then save or run it.
+
+## Using prompt library
+
+Open Prompt Library to create reusable prompts with tags, categories, tool hints, and `{{variables}}`.
+
+## Using variables
+
+Variables resolve from step outputs, workflow inputs, reusable variables, and system variables. Preview resolution before running.
+
+## Parallel workflows
+
+Use `mode: "parallel"` groups with child single steps. Child steps should not reference sibling outputs from the same group.
+
+## Results and exports
+
+Use Run History and Results to inspect outputs and export Markdown, TXT, JSON, or ZIP packages.
+
+## Backups
+
+Use Backup & Restore for database/full backups and validate backups before restore. Browser profile is not included by default.
+
+## Troubleshooting
+
+See `TROUBLESHOOTING.md` from Help or the project root.
+
+## Safety boundaries
+
+No Claude connector, no Perplexity connector, no API-key mode, no login automation, no CAPTCHA solving, no rate-limit bypass, and no hidden/stealth browser automation.
+
+## Known limitations
+
+- Claude connector not implemented yet.
+- Perplexity connector not implemented yet.
+- No API-key mode.
+- No login automation.
+- No CAPTCHA solving.
+- No rate-limit bypass.
+- Website UI changes may require connector selector updates.

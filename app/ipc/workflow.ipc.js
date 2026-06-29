@@ -2,14 +2,9 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { ipcMain } from 'electron';
 import { validateWorkflow } from '../runner/workflowValidator.js';
-<<<<<<< HEAD
 import { getRunState, resumeWorkflow, retryPausedStep, runWorkflow } from '../runner/workflowEngine.js';
 import { cancelQueuedRun, clearCompletedQueueItems, enqueueRun, getQueueStatus, processQueue } from '../runner/runQueue.js';
 import { deleteWorkflow, duplicateWorkflow, getWorkflowById, importWorkflowFromJson, listWorkflows } from '../storage/workflows.js';
-=======
-import { retryPausedStep, runWorkflow } from '../runner/workflowEngine.js';
-import { getWorkflowById, listWorkflows } from '../storage/workflows.js';
->>>>>>> origin/main
 import { getRunById, listRuns, listRunSteps } from '../storage/runs.js';
 
 function success(data) {
@@ -39,7 +34,6 @@ export function registerWorkflowIpc() {
     try { return success(await retryPausedStep(runId)); } catch (error) { return failure(error); }
   });
 
-<<<<<<< HEAD
   ipcMain.handle('workflow:resume', async (_event, runId) => {
     try { return success(await resumeWorkflow(runId)); } catch (error) { return failure(error); }
   });
@@ -68,8 +62,6 @@ export function registerWorkflowIpc() {
     try { return success(clearCompletedQueueItems()); } catch (error) { return failure(error); }
   });
 
-=======
->>>>>>> origin/main
   ipcMain.handle('workflow:list', async () => {
     try {
       return success([
@@ -78,19 +70,14 @@ export function registerWorkflowIpc() {
         { id: 'sample-chatgpt-basic', name: 'ChatGPT Basic Test', status: 'sample', description: 'Bundled ChatGPT browser connector sample' },
         { id: 'sample-gemini-basic', name: 'Gemini Basic Test', status: 'sample', description: 'Bundled Gemini browser connector sample' },
         { id: 'sample-mixed-chatgpt-gemini', name: 'Mixed ChatGPT Gemini Test', status: 'sample', description: 'Bundled mixed ChatGPT and Gemini sample' },
-<<<<<<< HEAD
         { id: 'sample-generic-basic', name: 'Generic Connector Basic Test', status: 'sample', description: 'Bundled generic connector sample' },
         { id: 'sample-parallel-assets', name: 'Parallel Assets Mock Test', status: 'sample', description: 'Bundled mock parallel sample' },
         { id: 'sample-mixed-parallel-chatgpt-gemini', name: 'Mixed Parallel ChatGPT Gemini', status: 'sample', description: 'Bundled browser parallel sample' },
         { id: 'sample-dependency-workflow', name: 'Dependency Workflow Mock Test', status: 'sample', description: 'Bundled dependency sample' }
-=======
-        { id: 'sample-generic-basic', name: 'Generic Connector Basic Test', status: 'sample', description: 'Bundled generic connector sample' }
->>>>>>> origin/main
       ]);
     } catch (error) { return failure(error); }
   });
 
-<<<<<<< HEAD
 
 
   ipcMain.handle('workflow:import', (_event, workflow) => {
@@ -105,8 +92,6 @@ export function registerWorkflowIpc() {
     try { return success(deleteWorkflow(workflowId)); } catch (error) { return failure(error); }
   });
 
-=======
->>>>>>> origin/main
   ipcMain.handle('workflow:get', async (_event, workflowId) => {
     try {
       if (workflowId === 'sample-youtube-package') return success(await readWorkflowFile('sample-youtube-package.json'));
@@ -114,12 +99,9 @@ export function registerWorkflowIpc() {
       if (workflowId === 'sample-gemini-basic') return success(await readWorkflowFile('sample-gemini-basic.json'));
       if (workflowId === 'sample-mixed-chatgpt-gemini') return success(await readWorkflowFile('sample-mixed-chatgpt-gemini.json'));
       if (workflowId === 'sample-generic-basic') return success(await readWorkflowFile('sample-generic-basic.json'));
-<<<<<<< HEAD
       if (workflowId === 'sample-parallel-assets') return success(await readWorkflowFile('sample-parallel-assets.json'));
       if (workflowId === 'sample-mixed-parallel-chatgpt-gemini') return success(await readWorkflowFile('sample-mixed-parallel-chatgpt-gemini.json'));
       if (workflowId === 'sample-dependency-workflow') return success(await readWorkflowFile('sample-dependency-workflow.json'));
-=======
->>>>>>> origin/main
       return success(getWorkflowById(workflowId));
     } catch (error) { return failure(error); }
   });

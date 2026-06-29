@@ -18,6 +18,10 @@ import { registerHealthIpc } from './ipc/health.ipc.js';
 import { runMigrations } from './migrations/migrationManager.js';
 import { runQuickHealthCheck } from './health/healthCheckManager.js';
 import { ensureDir, projectPath } from './shared/fileUtils.js';
+import { registerReadinessIpc } from './ipc/readiness.ipc.js';
+import { registerOnboardingIpc } from './ipc/onboarding.ipc.js';
+import { registerShortcutsIpc } from './ipc/shortcuts.ipc.js';
+import { registerAppIpc } from './ipc/app.ipc.js';
 import { seedDefaultPromptsIfEmpty } from './storage/prompts.js';
 import { seedDefaultTemplatesIfEmpty } from './storage/templates.js';
 
@@ -69,6 +73,10 @@ app.whenReady().then(async () => {
   registerBackupIpc();
   registerPackageIpc();
   registerHealthIpc();
+  registerReadinessIpc();
+  registerOnboardingIpc();
+  registerShortcutsIpc();
+  registerAppIpc();
   createMainWindow();
 
   app.on('activate', () => {

@@ -91,9 +91,16 @@ h1 { margin-bottom: 0; font-size: clamp(1.8rem, 3vw, 2.6rem); }
 .connectorStatusList { display: grid; gap: 10px; }
 .connectorStatusItem { display: grid; grid-template-columns: 1fr auto auto; gap: 10px; align-items: center; border: 1px solid #e2e8f0; border-radius: 12px; padding: 10px 12px; }
 .inlineInput { border: 1px solid #cbd5e1; border-radius: 10px; padding: 10px 12px; min-width: min(100%, 320px); }
-<<<<<<< HEAD
 .parallelGroupCard { border: 1px solid #c7d2fe; background: #eef2ff; border-radius: 14px; padding: 14px; margin-top: 12px; }
 .stepStatus.childStep { margin-left: 18px; }
 .queuePanel { grid-column: 1 / -1; }
-=======
->>>>>>> origin/main
+.stepCard,.connectorCard,.helpCard,.modalCard,.commandPalette{background:#fff;border:1px solid #d8dee9;border-radius:12px;padding:1rem;margin:.75rem 0;box-shadow:0 1px 2px rgba(15,23,42,.05)}
+.activePanel{border-color:#2563eb;box-shadow:0 0 0 2px rgba(37,99,235,.15)}
+.stepHeader,.checkItem{display:flex;align-items:center;justify-content:space-between;gap:.75rem}
+.checkItem{justify-content:flex-start;border-bottom:1px solid #eef2f7;padding:.75rem 0}
+.connectorGrid,.quickActionGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:.75rem}
+.preflightPanel{border:1px dashed #94a3b8;border-radius:12px;padding:1rem;background:#f8fafc}
+.modalOverlay{position:fixed;inset:0;background:rgba(15,23,42,.45);display:flex;align-items:flex-start;justify-content:center;padding-top:8vh;z-index:50}
+.commandPalette{width:min(720px,92vw);max-height:70vh;overflow:auto}.commandPalette input{width:100%;padding:.8rem;margin-bottom:.75rem}.commandPalette button{display:block;width:100%;text-align:left;padding:.7rem;border:0;border-bottom:1px solid #eef2f7;background:#fff}.commandPalette small{display:block;color:#64748b}
+.modalCard{width:min(720px,92vw);max-height:75vh;overflow:auto}.toast{position:fixed;right:1rem;bottom:1rem;padding:.75rem 1rem;border-radius:10px;background:#0f172a;color:#fff}.warningBox{background:#fff7ed;border:1px solid #fdba74;border-radius:10px;padding:.75rem;margin:.5rem 0}.successBox{background:#ecfdf5;border:1px solid #86efac;border-radius:10px;padding:.75rem;margin:.5rem 0}.errorBox{background:#fef2f2;border:1px solid #fca5a5;border-radius:10px;padding:.75rem;margin:.5rem 0}.loadingState{padding:1rem;color:#64748b}.mutedText{color:#64748b}.statusBadge{display:inline-block;padding:.2rem .55rem;border-radius:999px;background:#e2e8f0;color:#0f172a;font-size:.8rem}.statusBadge.completed,.statusBadge.ready,.statusBadge.ok{background:#dcfce7;color:#166534}.statusBadge.running{background:#dbeafe;color:#1d4ed8}.statusBadge.paused,.statusBadge.warning,.statusBadge.manual_action_required{background:#fef3c7;color:#92400e}.statusBadge.failed,.statusBadge.error{background:#fee2e2;color:#991b1b}.statusBadge.cancelled,.statusBadge.not_ready{background:#e5e7eb;color:#374151}
+@media (max-width:900px){.appShell{grid-template-columns:1fr}.sidebar{position:static}.grid.twoColumn{grid-template-columns:1fr}.mainContent{padding:1rem}}

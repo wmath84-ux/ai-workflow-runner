@@ -35,7 +35,6 @@ function mapStep(row) {
     startedAt: row.started_at,
     completedAt: row.completed_at,
     createdAt: row.created_at,
-<<<<<<< HEAD
     updatedAt: row.updated_at,
     parentGroupId: row.parent_group_id,
     orderIndex: row.order_index,
@@ -55,12 +54,6 @@ function mapQueue(row) {
   return { id: row.id, runId: row.run_id, workflowName: row.workflow_name, status: row.status, requestedAt: row.requested_at, startedAt: row.started_at, finishedAt: row.finished_at, raw: parseJson(row.raw_json, {}) };
 }
 
-=======
-    updatedAt: row.updated_at
-  };
-}
-
->>>>>>> origin/main
 export function createRun({ workflowId = null, workflowName, input = {}, status = 'pending' }) {
   const id = `run_${crypto.randomUUID()}`;
   const startedAt = new Date().toISOString();
@@ -84,17 +77,10 @@ export function listRuns() {
   return getDatabase().prepare('SELECT * FROM runs ORDER BY created_at DESC').all().map(mapRun);
 }
 
-<<<<<<< HEAD
 export function createRunStep({ runId, stepKey, status = 'pending', input = {}, output = {}, error = null, parentGroupId = null, orderIndex = null }) {
   const id = `step_${crypto.randomUUID()}`;
   getDatabase().prepare(`INSERT INTO run_steps (id, run_id, step_key, status, input_json, output_json, error_json, parent_group_id, order_index) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`)
     .run(id, runId, stepKey, status, JSON.stringify(input), JSON.stringify(output), JSON.stringify(error), parentGroupId, orderIndex);
-=======
-export function createRunStep({ runId, stepKey, status = 'pending', input = {}, output = {}, error = null }) {
-  const id = `step_${crypto.randomUUID()}`;
-  getDatabase().prepare(`INSERT INTO run_steps (id, run_id, step_key, status, input_json, output_json, error_json) VALUES (?, ?, ?, ?, ?, ?, ?)`)
-    .run(id, runId, stepKey, status, JSON.stringify(input), JSON.stringify(output), JSON.stringify(error));
->>>>>>> origin/main
   return mapStep(getDatabase().prepare('SELECT * FROM run_steps WHERE id = ?').get(id));
 }
 
@@ -103,13 +89,8 @@ export function updateRunStep(stepId, updates = {}) {
   if (!current) return null;
   const startedAt = updates.startedAt === undefined ? current.startedAt : updates.startedAt;
   const completedAt = updates.completedAt === undefined ? current.completedAt : updates.completedAt;
-<<<<<<< HEAD
   getDatabase().prepare(`UPDATE run_steps SET status = ?, input_json = ?, output_json = ?, error_json = ?, started_at = ?, completed_at = ?, raw_json = ?, warning_json = ?, partial = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?`)
     .run(updates.status ?? current.status, JSON.stringify(updates.input ?? current.input), JSON.stringify(updates.output ?? current.output), JSON.stringify(updates.error ?? current.error), startedAt, completedAt, JSON.stringify(updates.raw ?? current.raw), JSON.stringify(updates.warning ?? current.warning), updates.partial === undefined ? (current.partial ? 1 : 0) : (updates.partial ? 1 : 0), stepId);
-=======
-  getDatabase().prepare(`UPDATE run_steps SET status = ?, input_json = ?, output_json = ?, error_json = ?, started_at = ?, completed_at = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?`)
-    .run(updates.status ?? current.status, JSON.stringify(updates.input ?? current.input), JSON.stringify(updates.output ?? current.output), JSON.stringify(updates.error ?? current.error), startedAt, completedAt, stepId);
->>>>>>> origin/main
   return mapStep(getDatabase().prepare('SELECT * FROM run_steps WHERE id = ?').get(stepId));
 }
 
@@ -133,7 +114,6 @@ export function getCheckpoint(runId) {
 export function deleteCheckpoint(runId) {
   return getDatabase().prepare('DELETE FROM checkpoints WHERE run_id = ?').run(runId).changes > 0;
 }
-<<<<<<< HEAD
 
 
 export function createRunGroup({ runId, groupId, label = '', status = 'pending', raw = {} }) {
@@ -209,5 +189,3 @@ export function getRunOutputPaths(runId) {
   if (!run) return null;
   return { outputFolder: `outputs/${String(run.workflowName).toLowerCase().replace(/[^a-z0-9-_]+/g, '-')}/${runId}` };
 }
-=======
->>>>>>> origin/main

@@ -1,6 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { createRoot } from 'react-dom/client';
-import Sidebar from './components/Sidebar.jsx';
 import Home from './pages/Home.jsx';
 import WorkflowList from './pages/WorkflowList.jsx';
 import WorkflowEditor from './pages/WorkflowEditor.jsx';
@@ -17,7 +16,12 @@ import VariableManager from './pages/VariableManager.jsx';
 import BackupRestore from './pages/BackupRestore.jsx';
 import AppStatus from './pages/AppStatus.jsx';
 import Diagnostics from './pages/Diagnostics.jsx';
+import Onboarding from './pages/Onboarding.jsx';
+import Help from './pages/Help.jsx';
 import ErrorBoundary from './components/ErrorBoundary.jsx';
+import AppShell from './components/AppShell.jsx';
+import CommandPalette from './components/CommandPalette.jsx';
+import KeyboardShortcutsModal from './components/KeyboardShortcutsModal.jsx';
 import BrowserPanel from './pages/BrowserPanel.jsx';
 import './styles/main.css';
 
@@ -38,33 +42,50 @@ const pages = {
   variables: VariableManager,
   backup: BackupRestore,
   status: AppStatus,
-  diagnostics: Diagnostics
+  diagnostics: Diagnostics,
+  onboarding: Onboarding,
+  help: Help
 };
 
 function App() {
   const [activePage, setActivePage] = useState('home');
   const [appInfo, setAppInfo] = useState({ name: 'AI Workflow Runner', version: '0.1.0' });
+  const [paletteOpen, setPaletteOpen] = useState(false);
+  const [shortcutsOpen, setShortcutsOpen] = useState(false);
+  const [shortcutSettings, setShortcutSettings] = useState({ enabled: true });
 
   useEffect(() => {
     window.aiWorkflowRunner?.getAppInfo?.().then(setAppInfo).catch(() => {});
+    window.appAPI.getOnboardingState?.().then((state) => { if (!state?.completed && !state?.skipped) setActivePage('onboarding'); }).catch(() => {});
+    window.appAPI.getShortcutSettings?.().then(setShortcutSettings).catch(() => {});
   }, []);
+
+  useEffect(() => {
+    function isTyping(target) { return ['INPUT', 'TEXTAREA', 'SELECT'].includes(target?.tagName) || target?.isContentEditable; }
+    function onKeyDown(event) {
+      const mod = event.ctrlKey || event.metaKey;
+      if (event.key === 'Escape') { setPaletteOpen(false); setShortcutsOpen(false); return; }
+      if (shortcutSettings.enabled === false || !mod || isTyping(event.target)) return;
+      if (event.key.toLowerCase() === 'k' && shortcutSettings.commandPaletteEnabled !== false) { event.preventDefault(); setPaletteOpen(true); }
+      if (event.key.toLowerCase() === 'n') { event.preventDefault(); setActivePage('editor'); }
+      if (event.key.toLowerCase() === 'r') { event.preventDefault(); setActivePage('run'); }
+      if (event.shiftKey && event.key.toLowerCase() === 'b') { event.preventDefault(); setActivePage('browser'); window.appAPI.launchBrowser?.(); }
+      if (event.shiftKey && event.key.toLowerCase() === 'c') { event.preventDefault(); setActivePage('browser'); window.appAPI.openTool?.('chatgpt'); }
+      if (event.shiftKey && event.key.toLowerCase() === 'g') { event.preventDefault(); setActivePage('browser'); window.appAPI.openTool?.('gemini'); }
+      if (event.shiftKey && event.key.toLowerCase() === 'h') { event.preventDefault(); setActivePage('help'); }
+      if (event.key === ',') { event.preventDefault(); setActivePage('settings'); }
+      if (event.key === '?') { event.preventDefault(); setShortcutsOpen(true); }
+    }
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [shortcutSettings.enabled]);
 
   const ActivePage = useMemo(() => pages[activePage] ?? Home, [activePage]);
 
   return (
-    <div className="appShell">
-      <Sidebar activePage={activePage} onNavigate={setActivePage} />
-      <main className="mainContent">
-        <header className="topBar">
-          <div>
-            <p className="eyebrow">Foundation build</p>
-            <h1>{appInfo.name}</h1>
-          </div>
-          <span className="versionBadge">v{appInfo.version}</span>
-        </header>
-        <ErrorBoundary><ActivePage /></ErrorBoundary>
-      </main>
-    </div>
+    <AppShell activePage={activePage} onNavigate={setActivePage} appInfo={appInfo} extras={<><CommandPalette open={paletteOpen} onClose={() => setPaletteOpen(false)} onNavigate={setActivePage} /><KeyboardShortcutsModal open={shortcutsOpen} onClose={() => setShortcutsOpen(false)} /></>}>
+      <ErrorBoundary><ActivePage onNavigate={setActivePage} /></ErrorBoundary>
+    </AppShell>
   );
 }
 

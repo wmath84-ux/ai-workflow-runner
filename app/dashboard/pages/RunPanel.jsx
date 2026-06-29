@@ -1,19 +1,13 @@
-<<<<<<< HEAD
 import React, { useEffect, useMemo, useState } from 'react';
-=======
-import React, { useMemo, useState } from 'react';
->>>>>>> origin/main
 import Card from '../components/Card.jsx';
 import RunLog from '../components/RunLog.jsx';
 import StepStatusList from '../components/StepStatusList.jsx';
 import ManualInterventionBox from '../components/ManualInterventionBox.jsx';
-<<<<<<< HEAD
 import RunQueuePanel from '../components/RunQueuePanel.jsx';
 import ParallelGroupCard from '../components/ParallelGroupCard.jsx';
 import DynamicRunForm from '../components/DynamicRunForm.jsx';
 import VariablePreviewPanel from '../components/VariablePreviewPanel.jsx';
-=======
->>>>>>> origin/main
+import PreflightCheckPanel from '../components/PreflightCheckPanel.jsx';
 
 const sampleWorkflow = {
   workflowName: 'YouTube Video Full Package',
@@ -34,20 +28,19 @@ export default function RunPanel() {
   const [isRunning, setIsRunning] = useState(false);
   const [browserStatus, setBrowserStatus] = useState(null);
   const [genericUrl, setGenericUrl] = useState('https://example.com');
-<<<<<<< HEAD
   const [queueStatus, setQueueStatus] = useState(null);
   const [savedWorkflows, setSavedWorkflows] = useState([]);
   const [templates, setTemplates] = useState([]);
   const [selectedWorkflowId, setSelectedWorkflowId] = useState('');
   const [selectedTemplateId, setSelectedTemplateId] = useState('');
   const [dynamicWorkflow, setDynamicWorkflow] = useState(null);
+  const [preflight, setPreflight] = useState(null);
+  const [allowWarningRun, setAllowWarningRun] = useState(false);
 
   useEffect(() => {
     window.appAPI.listWorkflows?.().then(setSavedWorkflows).catch(() => {});
     window.appAPI.listTemplates?.().then(setTemplates).catch(() => {});
   }, []);
-=======
->>>>>>> origin/main
 
   const parsedWorkflow = useMemo(() => {
     try { return { workflow: JSON.parse(workflowText), error: null }; }
@@ -84,6 +77,33 @@ export default function RunPanel() {
     }
   }
 
+
+  async function runPreflight(workflow = parsedWorkflow.workflow) {
+    if (!workflow) return null;
+    try {
+      const result = await window.appAPI.runWorkflowPreflightChecks(workflow);
+      setPreflight(result);
+      setAllowWarningRun(false);
+      return result;
+    } catch (error) {
+      const result = { ok: false, canRun: false, errors: [{ type: 'preflight_failed', message: error.message }], warnings: [] };
+      setPreflight(result);
+      return result;
+    }
+  }
+
+  async function ensureReadyForRun(workflow) {
+    const validationResult = await validateCurrentWorkflow();
+    if (!validationResult?.valid) return false;
+    const preflightResult = await runPreflight(workflow);
+    if (!preflightResult?.canRun) return false;
+    if (preflightResult.warnings?.length && !allowWarningRun) {
+      setLogs((current) => [...current, 'Preflight produced warnings. Review them, then click Continue anyway for warnings only.']);
+      return false;
+    }
+    return true;
+  }
+
   async function retryPausedStep() {
     if (!runResult?.runId) return;
     setIsRunning(true);
@@ -99,14 +119,12 @@ export default function RunPanel() {
     }
   }
 
-<<<<<<< HEAD
   async function refreshQueue() {
     try { setQueueStatus(await window.appAPI.getRunQueueStatus()); } catch (error) { setLogs((current) => [...current, error.message]); }
   }
 
   async function enqueueCurrentWorkflow() {
-    const validationResult = await validateCurrentWorkflow();
-    if (!validationResult?.valid) return;
+    if (!await ensureReadyForRun(parsedWorkflow.workflow)) return;
     try {
       await window.appAPI.enqueueWorkflowRun(parsedWorkflow.workflow);
       await refreshQueue();
@@ -139,6 +157,8 @@ export default function RunPanel() {
 
   async function runWorkflowObject(workflow) {
     setWorkflowText(JSON.stringify(workflow, null, 2));
+    const preflightResult = await runPreflight(workflow);
+    if (!preflightResult?.canRun || (preflightResult.warnings?.length && !allowWarningRun)) return;
     setIsRunning(true);
     try {
       const result = await window.appAPI.runWorkflow(workflow);
@@ -148,11 +168,8 @@ export default function RunPanel() {
     finally { setIsRunning(false); }
   }
 
-=======
->>>>>>> origin/main
   async function runCurrentWorkflow() {
-    const validationResult = await validateCurrentWorkflow();
-    if (!validationResult?.valid) return;
+    if (!await ensureReadyForRun(parsedWorkflow.workflow)) return;
     setIsRunning(true);
     setLogs(['Workflow run started. Steps execute sequentially with the mock runner.']);
     try {
@@ -187,7 +204,6 @@ export default function RunPanel() {
         </div>
       </Card>
 
-<<<<<<< HEAD
       <Card title="Run From Library or Template">
         <p>Select a saved workflow or template, fill inputs dynamically, then run or queue.</p>
         <div className="buttonRow">
@@ -204,23 +220,20 @@ export default function RunPanel() {
         {parsedWorkflow.workflow ? <VariablePreviewPanel text={JSON.stringify(parsedWorkflow.workflow.inputs ?? {}, null, 2)} context={parsedWorkflow.workflow.inputs ?? {}} /> : null}
       </Card>
 
+      <Card title="Run Preflight">
+        <PreflightCheckPanel result={preflight} onRunCheck={() => runPreflight()} onOpenBrowser={() => setLogs((current) => [...current, 'Open Browser Panel from the sidebar for browser preparation.'])} onOpenChatGPT={() => openTool('chatgpt')} onOpenGemini={() => openTool('gemini')} />
+        {preflight?.warnings?.length && preflight?.canRun ? <button className="secondaryButton" onClick={() => setAllowWarningRun(true)}>Continue anyway for warnings only</button> : null}
+      </Card>
+
       <Card title="Run Workflow JSON">
-=======
-      <Card title="Run Workflow">
->>>>>>> origin/main
         <p>Paste a workflow JSON document, validate it, then execute it with the safe mock runner.</p>
         <textarea className="workflowTextarea" value={workflowText} onChange={(event) => setWorkflowText(event.target.value)} />
         <div className="buttonRow">
           <button className="secondaryButton" onClick={validateCurrentWorkflow} disabled={isRunning}>Validate Workflow</button>
-<<<<<<< HEAD
           <button className="primaryAction" onClick={runCurrentWorkflow} disabled={isRunning}>{isRunning ? 'Running…' : 'Run Now'}</button>
           <button className="secondaryButton" onClick={enqueueCurrentWorkflow} disabled={isRunning}>Add To Queue</button>
           <button className="secondaryButton" onClick={retryPausedStep} disabled={isRunning || runResult?.status !== 'paused'}>Retry Paused Step</button>
           <button className="secondaryButton" onClick={resumeCurrentWorkflow} disabled={isRunning || !runResult?.runId}>Resume Workflow</button>
-=======
-          <button className="primaryAction" onClick={runCurrentWorkflow} disabled={isRunning}>{isRunning ? 'Running…' : 'Run Workflow'}</button>
-          <button className="secondaryButton" onClick={retryPausedStep} disabled={isRunning || runResult?.status !== 'paused'}>Retry Paused Step</button>
->>>>>>> origin/main
         </div>
       </Card>
 
@@ -242,16 +255,11 @@ export default function RunPanel() {
         {runResult?.status === 'paused' ? <ManualInterventionBox message={runResult.message} onOpenChatGPT={() => openTool('chatgpt')} onRetry={retryPausedStep} /> : null}
         <RunLog messages={logs} />
         <StepStatusList steps={runResult?.steps ?? []} />
-<<<<<<< HEAD
         {(runResult?.groups ?? []).map((group) => <ParallelGroupCard key={group.id} group={group} steps={runResult?.steps ?? []} />)}
       </Card>
 
       <RunQueuePanel queueStatus={queueStatus} onRefresh={refreshQueue} onCancel={async (id) => { await window.appAPI.cancelQueuedRun(id); await refreshQueue(); }} onClearCompleted={async () => { await window.appAPI.clearCompletedQueueItems(); await refreshQueue(); }} />
 
-=======
-      </Card>
-
->>>>>>> origin/main
       {runResult ? (
         <Card title="Completed Outputs">
           <p><strong>Run ID:</strong> {runResult.runId}</p>

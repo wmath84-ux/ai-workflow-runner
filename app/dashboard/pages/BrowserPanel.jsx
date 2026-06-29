@@ -3,6 +3,7 @@ import BrowserStatusCard from '../components/BrowserStatusCard.jsx';
 import Card from '../components/Card.jsx';
 import ToolLoginCard from '../components/ToolLoginCard.jsx';
 import ConnectorStatusList from '../components/ConnectorStatusList.jsx';
+import ConnectorReadinessChecklist from '../components/ConnectorReadinessChecklist.jsx';
 
 export default function BrowserPanel() {
   const [status, setStatus] = useState(null);
@@ -61,6 +62,10 @@ export default function BrowserPanel() {
 
       <Card title="Connector Status">
         <ConnectorStatusList connectors={connectors} />
+      </Card>
+
+      <Card title="Connector Readiness Checklist">
+        <ConnectorReadinessChecklist onOpenTool={(toolName) => runAction(() => window.appAPI.openTool(toolName), `${toolName} opened.`)} onTroubleshoot={() => window.appAPI.openTroubleshooting?.()} />
       </Card>
 
       <Card title="Manual Login">

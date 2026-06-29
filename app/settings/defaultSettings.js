@@ -1,5 +1,5 @@
 export const defaultSettings = {
-  app: { theme: 'system', startPage: 'home', compactMode: false, showAdvancedOptions: false },
+  app: { theme: 'system', startPage: 'home', compactMode: false, showAdvancedOptions: false, onboardingCompleted: false, onboardingCompletedAt: null, keyboardShortcutsEnabled: true, commandPaletteEnabled: true, showSetupChecklistOnHome: true },
   browser: { profilePath: '', defaultTool: 'chatgpt', autoLaunchBrowser: false, rememberOpenTabs: true, warnBeforeClearingProfile: true },
   workflow: { defaultMaxConcurrency: 2, stopParallelGroupOnFailure: true, allowConcurrentRuns: false, queueEnabled: true, defaultRunMode: 'queue', autoSaveWorkflowBeforeRun: true },
   outputs: { outputFolder: '', exportsFolder: '', defaultExportFormat: 'markdown', saveStepMarkdown: true, saveStepJson: true, saveFinalOutput: true },

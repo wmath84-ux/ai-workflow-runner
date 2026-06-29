@@ -99,7 +99,24 @@ const appAPI = {
   exportDiagnostics: (options) => unwrap(ipcRenderer.invoke('diagnostics:export', options)),
   getDatabaseStats: () => unwrap(ipcRenderer.invoke('maintenance:db-stats')),
   vacuumDatabase: () => unwrap(ipcRenderer.invoke('maintenance:vacuum')),
-  clearOldLogs: (days) => unwrap(ipcRenderer.invoke('maintenance:clear-old-logs', days))
+  clearOldLogs: (days) => unwrap(ipcRenderer.invoke('maintenance:clear-old-logs', days)),
+
+  checkConnectorReadiness: (toolName, options) => unwrap(ipcRenderer.invoke('readiness:check-connector', toolName, options)),
+  checkAllConnectorReadiness: (options) => unwrap(ipcRenderer.invoke('readiness:check-all-connectors', options)),
+  getConnectorReadinessSummary: () => unwrap(ipcRenderer.invoke('readiness:summary')),
+  runWorkflowPreflightChecks: (workflow) => unwrap(ipcRenderer.invoke('preflight:workflow', workflow)),
+  getOnboardingState: () => unwrap(ipcRenderer.invoke('onboarding:get')),
+  updateOnboardingState: (updates) => unwrap(ipcRenderer.invoke('onboarding:update', updates)),
+  markOnboardingStepComplete: (stepId) => unwrap(ipcRenderer.invoke('onboarding:complete-step', stepId)),
+  resetOnboarding: () => unwrap(ipcRenderer.invoke('onboarding:reset')),
+  completeOnboarding: () => unwrap(ipcRenderer.invoke('onboarding:complete')),
+  listShortcuts: () => unwrap(ipcRenderer.invoke('shortcuts:list')),
+  getShortcutSettings: () => unwrap(ipcRenderer.invoke('shortcuts:get-settings')),
+  updateShortcutSettings: (settings) => unwrap(ipcRenderer.invoke('shortcuts:update-settings', settings)),
+  getVersionInfo: () => unwrap(ipcRenderer.invoke('app:version-info')),
+  getBuildInfo: () => unwrap(ipcRenderer.invoke('app:build-info')),
+  openUserGuide: () => unwrap(ipcRenderer.invoke('app:open-user-guide')),
+  openTroubleshooting: () => unwrap(ipcRenderer.invoke('app:open-troubleshooting'))
 };
 
 contextBridge.exposeInMainWorld('appAPI', appAPI);

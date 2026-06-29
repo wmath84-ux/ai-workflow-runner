@@ -66,7 +66,6 @@ CREATE TABLE IF NOT EXISTS checkpoints (
   updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (run_id) REFERENCES runs(id)
 );
-<<<<<<< HEAD
 
 CREATE TABLE IF NOT EXISTS run_groups (
   id TEXT PRIMARY KEY,
@@ -165,5 +164,3 @@ CREATE TABLE IF NOT EXISTS migrations (
   status TEXT NOT NULL,
   error TEXT
 );
-=======
->>>>>>> origin/main

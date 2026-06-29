@@ -17,6 +17,8 @@ const navItems = [
   ['backup', 'Backup & Restore'],
   ['status', 'App Status'],
   ['diagnostics', 'Diagnostics'],
+  ['onboarding', 'Onboarding / Setup Guide'],
+  ['help', 'Help'],
   ['settings', 'Settings']
 ];
 

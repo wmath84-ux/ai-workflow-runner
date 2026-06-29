@@ -33,7 +33,6 @@ export function updateWorkflow(id, updates) {
 export function deleteWorkflow(id) {
   return getDatabase().prepare('DELETE FROM workflows WHERE id = ?').run(id).changes > 0;
 }
-<<<<<<< HEAD
 
 export function importWorkflowFromJson(workflow) { return createWorkflow({ name: workflow.workflowName ?? workflow.name, description: workflow.description ?? '', status: 'ready', definition: workflow }); }
 export function saveWorkflowJson(workflow) { return importWorkflowFromJson(workflow); }
@@ -47,5 +46,3 @@ export function searchWorkflows(filters = {}) {
   if (filters.search) workflows = workflows.filter((workflow) => `${workflow.name} ${workflow.description}`.toLowerCase().includes(filters.search.toLowerCase()));
   return workflows;
 }
-=======
->>>>>>> origin/main

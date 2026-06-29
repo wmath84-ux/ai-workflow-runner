@@ -1,0 +1,4 @@
+import { loadSettings, saveSettings } from '../settings/settingsService.js';
+export async function getShortcutSettings(){const {settings}=await loadSettings(); return { enabled: settings.app.keyboardShortcutsEnabled !== false, commandPaletteEnabled: settings.app.commandPaletteEnabled !== false };}
+export async function updateShortcutSettings(nextSettings){const {settings}=await loadSettings(); if('enabled' in nextSettings) settings.app.keyboardShortcutsEnabled=Boolean(nextSettings.enabled); if('commandPaletteEnabled' in nextSettings) settings.app.commandPaletteEnabled=Boolean(nextSettings.commandPaletteEnabled); await saveSettings(settings); return getShortcutSettings();}
+export function shouldIgnoreShortcut(eventTarget){const tag=eventTarget?.tagName?.toLowerCase(); return ['input','textarea','select'].includes(tag) || eventTarget?.isContentEditable;}
