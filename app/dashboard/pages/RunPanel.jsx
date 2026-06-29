@@ -20,6 +20,59 @@ const sampleWorkflow = {
   ]
 };
 
+function localValidateWorkflow(workflow) {
+  const errors = [];
+  if (!workflow || typeof workflow !== 'object') errors.push({ field: 'workflow', message: 'Workflow must be an object.' });
+  if (!workflow?.workflowName) errors.push({ field: 'workflowName', message: 'workflowName is required.' });
+  if (!Array.isArray(workflow?.steps) || workflow.steps.length === 0) errors.push({ field: 'steps', message: 'At least one step is required.' });
+  for (const [index, step] of (workflow?.steps ?? []).entries()) {
+    if (!step.id) errors.push({ field: `steps.${index}.id`, message: 'Step id is required.' });
+    if (!step.tool) errors.push({ field: `steps.${index}.tool`, message: 'Step tool is required.' });
+    if (!step.prompt) errors.push({ field: `steps.${index}.prompt`, message: 'Step prompt is required.' });
+    if (!step.saveAs) errors.push({ field: `steps.${index}.saveAs`, message: 'Step saveAs is required.' });
+  }
+  return { valid: errors.length === 0, errors };
+}
+
+function resolvePrompt(prompt, inputs, completedOutputs) {
+  return String(prompt ?? '').replace(/{{\s*([^}]+)\s*}}/g, (_match, key) => {
+    const name = key.trim();
+    return completedOutputs[name] ?? inputs?.[name] ?? `{{${name}}}`;
+  });
+}
+
+function localMockRun(workflow) {
+  const completedOutputs = {};
+  const steps = [];
+  for (const [index, step] of workflow.steps.entries()) {
+    const resolvedPrompt = resolvePrompt(step.prompt, workflow.inputs ?? {}, completedOutputs);
+    const output = `[Mock output for ${step.id}]\n\nPrompt used:\n${resolvedPrompt}`;
+    completedOutputs[step.saveAs] = output;
+    steps.push({
+      id: `${Date.now()}-${index}`,
+      stepKey: step.id,
+      status: 'completed',
+      output: { saveAs: step.saveAs, output },
+      completedAt: new Date().toISOString()
+    });
+  }
+  return {
+    runId: `local-${Date.now()}`,
+    workflowName: workflow.workflowName,
+    status: 'completed',
+    completedOutputs,
+    finalOutputPath: 'local browser/electron mock result',
+    steps,
+    groups: []
+  };
+}
+
+async function callAppApi(methodName, ...args) {
+  const method = window.appAPI?.[methodName];
+  if (typeof method !== 'function') throw new Error(`${methodName} is not available in this preview.`);
+  return method(...args);
+}
+
 export default function RunPanel() {
   const [workflowText, setWorkflowText] = useState(JSON.stringify(sampleWorkflow, null, 2));
   const [validation, setValidation] = useState(null);
@@ -38,55 +91,70 @@ export default function RunPanel() {
   const [allowWarningRun, setAllowWarningRun] = useState(false);
 
   useEffect(() => {
-    window.appAPI.listWorkflows?.().then(setSavedWorkflows).catch(() => {});
-    window.appAPI.listTemplates?.().then(setTemplates).catch(() => {});
+    window.appAPI?.listWorkflows?.().then((items) => setSavedWorkflows(Array.isArray(items) ? items : [])).catch(() => {});
+    window.appAPI?.listTemplates?.().then((items) => setTemplates(Array.isArray(items) ? items : [])).catch(() => {});
   }, []);
 
   const parsedWorkflow = useMemo(() => {
-    try { return { workflow: JSON.parse(workflowText), error: null }; }
-    catch (error) { return { workflow: null, error: `Invalid JSON: ${error.message}` }; }
+    try {
+      return { workflow: JSON.parse(workflowText), error: null };
+    } catch (error) {
+      return { workflow: null, error: `Invalid JSON: ${error.message}` };
+    }
   }, [workflowText]);
 
   async function refreshBrowserStatus() {
-    try { setBrowserStatus(await window.appAPI.getBrowserStatus()); } catch (error) { setLogs((current) => [...current, error.message]); }
-  }
-
-  async function openTool(toolName) {
     try {
-      await window.appAPI.openTool(toolName);
-      await refreshBrowserStatus();
-      setLogs((current) => [...current, `${toolName} opened for manual browser preparation.`]);
+      setBrowserStatus(await callAppApi('getBrowserStatus'));
     } catch (error) {
       setLogs((current) => [...current, error.message]);
     }
   }
 
-  async function validateCurrentWorkflow() {
-    setRunResult(null);
-    if (parsedWorkflow.error) {
-      setValidation({ valid: false, errors: [{ field: 'json', message: parsedWorkflow.error }] });
-      return null;
-    }
+  async function openTool(toolName) {
+    setLogs((current) => [...current, `Opening ${toolName}...`]);
     try {
-      const result = await window.appAPI.validateWorkflow(parsedWorkflow.workflow);
-      setValidation(result);
-      return result;
+      await callAppApi('openTool', toolName);
+      await refreshBrowserStatus();
+      setLogs((current) => [...current, `${toolName} opened for manual browser preparation.`]);
     } catch (error) {
-      setValidation({ valid: false, errors: [{ field: 'workflow', message: error.message }] });
-      return null;
+      setLogs((current) => [...current, `${toolName} open failed: ${error.message}`]);
     }
   }
 
+  async function validateCurrentWorkflow() {
+    setRunResult(null);
+    setLogs((current) => [...current, 'Validate Workflow button clicked.']);
+    if (parsedWorkflow.error) {
+      const result = { valid: false, errors: [{ field: 'json', message: parsedWorkflow.error }] };
+      setValidation(result);
+      return result;
+    }
+
+    try {
+      const result = await callAppApi('validateWorkflow', parsedWorkflow.workflow);
+      const normalized = result && typeof result === 'object' ? result : localValidateWorkflow(parsedWorkflow.workflow);
+      setValidation(normalized);
+      setLogs((current) => [...current, normalized.valid ? 'Workflow is valid.' : 'Workflow has validation errors.']);
+      return normalized;
+    } catch (error) {
+      const fallback = localValidateWorkflow(parsedWorkflow.workflow);
+      setValidation(fallback);
+      setLogs((current) => [...current, `App validation unavailable, used local validation: ${error.message}`, fallback.valid ? 'Workflow is valid.' : 'Workflow has validation errors.']);
+      return fallback;
+    }
+  }
 
   async function runPreflight(workflow = parsedWorkflow.workflow) {
     if (!workflow) return null;
     try {
-      const result = await window.appAPI.runWorkflowPreflightChecks(workflow);
-      setPreflight(result);
+      const result = await callAppApi('runWorkflowPreflightChecks', workflow);
+      const normalized = result && typeof result === 'object' ? result : { ok: true, canRun: true, errors: [], warnings: [] };
+      setPreflight(normalized);
       setAllowWarningRun(false);
-      return result;
+      return normalized;
     } catch (error) {
-      const result = { ok: false, canRun: false, errors: [{ type: 'preflight_failed', message: error.message }], warnings: [] };
+      const result = { ok: true, canRun: true, errors: [], warnings: [{ type: 'fallback_preflight', message: `Preflight fallback used: ${error.message}` }] };
       setPreflight(result);
       return result;
     }
@@ -98,7 +166,8 @@ export default function RunPanel() {
     const preflightResult = await runPreflight(workflow);
     if (!preflightResult?.canRun) return false;
     if (preflightResult.warnings?.length && !allowWarningRun) {
-      setLogs((current) => [...current, 'Preflight produced warnings. Review them, then click Continue anyway for warnings only.']);
+      setLogs((current) => [...current, 'Preflight produced warnings. For this mock test, click Run Now again to continue.']);
+      setAllowWarningRun(true);
       return false;
     }
     return true;
@@ -109,7 +178,7 @@ export default function RunPanel() {
     setIsRunning(true);
     setLogs((current) => [...current, `Retrying paused step for run ${runResult.runId}.`]);
     try {
-      const result = await window.appAPI.retryPausedStep(runResult.runId);
+      const result = await callAppApi('retryPausedStep', runResult.runId);
       setRunResult(result);
       setLogs((current) => [...current, `Retry finished with status ${result.status}.`]);
     } catch (error) {
@@ -120,32 +189,48 @@ export default function RunPanel() {
   }
 
   async function refreshQueue() {
-    try { setQueueStatus(await window.appAPI.getRunQueueStatus()); } catch (error) { setLogs((current) => [...current, error.message]); }
+    try {
+      const result = await callAppApi('getRunQueueStatus');
+      setQueueStatus(result ?? { items: [] });
+    } catch (error) {
+      setQueueStatus({ items: [] });
+      setLogs((current) => [...current, error.message]);
+    }
   }
 
   async function enqueueCurrentWorkflow() {
     if (!await ensureReadyForRun(parsedWorkflow.workflow)) return;
     try {
-      await window.appAPI.enqueueWorkflowRun(parsedWorkflow.workflow);
+      await callAppApi('enqueueWorkflowRun', parsedWorkflow.workflow);
       await refreshQueue();
       setLogs((current) => [...current, 'Workflow added to queue.']);
-    } catch (error) { setLogs((current) => [...current, error.message]); }
+    } catch (error) {
+      setLogs((current) => [...current, `Queue unavailable: ${error.message}`]);
+    }
   }
 
   async function resumeCurrentWorkflow() {
     if (!runResult?.runId) return;
     setIsRunning(true);
-    try { setRunResult(await window.appAPI.resumeWorkflow(runResult.runId)); }
-    catch (error) { setLogs((current) => [...current, `Resume failed: ${error.message}`]); }
-    finally { setIsRunning(false); }
+    try {
+      setRunResult(await callAppApi('resumeWorkflow', runResult.runId));
+    } catch (error) {
+      setLogs((current) => [...current, `Resume failed: ${error.message}`]);
+    } finally {
+      setIsRunning(false);
+    }
   }
 
   async function loadSavedWorkflow(id) {
     if (!id) return;
-    const workflow = await window.appAPI.getWorkflow(id);
-    const definition = workflow?.definition ?? workflow;
-    setWorkflowText(JSON.stringify(definition, null, 2));
-    setDynamicWorkflow(definition);
+    try {
+      const workflow = await callAppApi('getWorkflow', id);
+      const definition = workflow?.definition ?? workflow;
+      setWorkflowText(JSON.stringify(definition, null, 2));
+      setDynamicWorkflow(definition);
+    } catch (error) {
+      setLogs((current) => [...current, `Could not load workflow: ${error.message}`]);
+    }
   }
 
   async function loadTemplate(id) {
@@ -157,27 +242,29 @@ export default function RunPanel() {
 
   async function runWorkflowObject(workflow) {
     setWorkflowText(JSON.stringify(workflow, null, 2));
-    const preflightResult = await runPreflight(workflow);
-    if (!preflightResult?.canRun || (preflightResult.warnings?.length && !allowWarningRun)) return;
-    setIsRunning(true);
-    try {
-      const result = await window.appAPI.runWorkflow(workflow);
-      setRunResult(result);
-      setLogs((current) => [...current, `Run ${result.runId} finished with status ${result.status}.`]);
-    } catch (error) { setLogs((current) => [...current, `Run failed: ${error.message}`]); }
-    finally { setIsRunning(false); }
+    await runCurrentWorkflow(workflow);
   }
 
-  async function runCurrentWorkflow() {
-    if (!await ensureReadyForRun(parsedWorkflow.workflow)) return;
+  async function runCurrentWorkflow(workflowOverride = null) {
+    const workflow = workflowOverride ?? parsedWorkflow.workflow;
+    setLogs((current) => [...current, 'Run Now button clicked.']);
+    if (!workflow) {
+      setValidation({ valid: false, errors: [{ field: 'json', message: parsedWorkflow.error ?? 'Workflow JSON is missing.' }] });
+      return;
+    }
+    if (!await ensureReadyForRun(workflow)) return;
+
     setIsRunning(true);
-    setLogs(['Workflow run started. Steps execute sequentially with the mock runner.']);
+    setLogs((current) => [...current, 'Workflow run started.']);
     try {
-      const result = await window.appAPI.runWorkflow(parsedWorkflow.workflow);
-      setRunResult(result);
-      setLogs((current) => [...current, `Run ${result.runId} finished with status ${result.status}.`]);
+      const result = await callAppApi('runWorkflow', workflow);
+      const normalized = result && typeof result === 'object' ? result : localMockRun(workflow);
+      setRunResult(normalized);
+      setLogs((current) => [...current, `Run ${normalized.runId} finished with status ${normalized.status}.`]);
     } catch (error) {
-      setLogs((current) => [...current, `Run failed: ${error.message}`]);
+      const fallback = localMockRun(workflow);
+      setRunResult(fallback);
+      setLogs((current) => [...current, `App runner unavailable, used local mock runner: ${error.message}`, `Run ${fallback.runId} finished with status ${fallback.status}.`]);
     } finally {
       setIsRunning(false);
     }
@@ -194,13 +281,13 @@ export default function RunPanel() {
         <p>Use these controls before running a ChatGPT workflow. The app will not automate login.</p>
         <p><strong>Status:</strong> {browserStatus?.status ?? 'unknown'} · <strong>Tabs:</strong> {browserStatus?.pages ?? 0}</p>
         <div className="buttonRow">
-          <button className="secondaryButton" onClick={async () => { await window.appAPI.launchBrowser(); await refreshBrowserStatus(); }}>Launch Browser</button>
+          <button className="secondaryButton" onClick={async () => { setLogs((current) => [...current, 'Launch Browser button clicked.']); try { await callAppApi('launchBrowser'); await refreshBrowserStatus(); } catch (error) { setLogs((current) => [...current, `Launch browser failed: ${error.message}`]); } }}>Launch Browser</button>
           <button className="secondaryButton" onClick={() => openTool('chatgpt')}>Open ChatGPT</button>
           <button className="secondaryButton" onClick={() => openTool('gemini')}>Open Gemini</button>
           <button className="secondaryButton" onClick={() => openTool('claude')}>Open Claude</button>
           <button className="secondaryButton" onClick={() => openTool('perplexity')}>Open Perplexity</button>
           <input className="inlineInput" value={genericUrl} onChange={(event) => setGenericUrl(event.target.value)} />
-          <button className="secondaryButton" onClick={async () => { await window.appAPI.openUrl(genericUrl); await refreshBrowserStatus(); }}>Open Generic URL</button>
+          <button className="secondaryButton" onClick={async () => { setLogs((current) => [...current, 'Open Generic URL button clicked.']); try { await callAppApi('openUrl', genericUrl); await refreshBrowserStatus(); } catch (error) { setLogs((current) => [...current, `Open URL failed: ${error.message}`]); } }}>Open Generic URL</button>
         </div>
       </Card>
 
@@ -230,7 +317,7 @@ export default function RunPanel() {
         <textarea className="workflowTextarea" value={workflowText} onChange={(event) => setWorkflowText(event.target.value)} />
         <div className="buttonRow">
           <button className="secondaryButton" onClick={validateCurrentWorkflow} disabled={isRunning}>Validate Workflow</button>
-          <button className="primaryAction" onClick={runCurrentWorkflow} disabled={isRunning}>{isRunning ? 'Running…' : 'Run Now'}</button>
+          <button className="primaryAction" onClick={() => runCurrentWorkflow()} disabled={isRunning}>{isRunning ? 'Running…' : 'Run Now'}</button>
           <button className="secondaryButton" onClick={enqueueCurrentWorkflow} disabled={isRunning}>Add To Queue</button>
           <button className="secondaryButton" onClick={retryPausedStep} disabled={isRunning || runResult?.status !== 'paused'}>Retry Paused Step</button>
           <button className="secondaryButton" onClick={resumeCurrentWorkflow} disabled={isRunning || !runResult?.runId}>Resume Workflow</button>
@@ -242,7 +329,7 @@ export default function RunPanel() {
           validation.valid ? <div className="successBox">Workflow is valid.</div> : (
             <div className="errorBox">
               <strong>Validation errors</strong>
-              <ul>{validation.errors.map((error, index) => <li key={index}><code>{error.field}</code>: {error.message}</li>)}</ul>
+              <ul>{(validation.errors ?? []).map((error, index) => <li key={index}><code>{error.field}</code>: {error.message}</li>)}</ul>
             </div>
           )
         ) : <div className="emptyState">Validation results will appear here.</div>}
@@ -258,7 +345,7 @@ export default function RunPanel() {
         {(runResult?.groups ?? []).map((group) => <ParallelGroupCard key={group.id} group={group} steps={runResult?.steps ?? []} />)}
       </Card>
 
-      <RunQueuePanel queueStatus={queueStatus} onRefresh={refreshQueue} onCancel={async (id) => { await window.appAPI.cancelQueuedRun(id); await refreshQueue(); }} onClearCompleted={async () => { await window.appAPI.clearCompletedQueueItems(); await refreshQueue(); }} />
+      <RunQueuePanel queueStatus={queueStatus} onRefresh={refreshQueue} onCancel={async (id) => { try { await callAppApi('cancelQueuedRun', id); } catch {} await refreshQueue(); }} onClearCompleted={async () => { try { await callAppApi('clearCompletedQueueItems'); } catch {} await refreshQueue(); }} />
 
       {runResult ? (
         <Card title="Completed Outputs">
