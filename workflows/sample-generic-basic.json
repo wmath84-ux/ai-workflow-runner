@@ -1,0 +1,23 @@
+{
+  "workflowName": "Generic Connector Basic Test",
+  "description": "Example workflow for a simple custom chat website.",
+  "inputs": {
+    "topic": "Gravity"
+  },
+  "steps": [
+    {
+      "id": "generic_prompt",
+      "tool": "generic",
+      "mode": "single",
+      "url": "https://example.com",
+      "prompt": "Explain this topic simply: {{topic}}",
+      "saveAs": "generic_output",
+      "selectors": {
+        "input": ["textarea", "[contenteditable='true']", "[role='textbox']"],
+        "send": ["button[type='submit']", "button[aria-label*='Send']"],
+        "response": ["article", ".response", ".markdown", "main"],
+        "generating": [".loading", ".spinner", "[aria-busy='true']"]
+      }
+    }
+  ]
+}

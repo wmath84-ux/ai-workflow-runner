@@ -1,0 +1,30 @@
+{
+  "workflowName": "YouTube Video Full Package",
+  "description": "Creates research, script, titles, and a final package using sequential mock steps.",
+  "inputs": {
+    "topic": "Newton's Laws of Motion"
+  },
+  "steps": [
+    {
+      "id": "research",
+      "tool": "mock",
+      "mode": "single",
+      "prompt": "Research this topic deeply: {{topic}}",
+      "saveAs": "research_output"
+    },
+    {
+      "id": "script",
+      "tool": "mock",
+      "mode": "single",
+      "prompt": "Using this research, write a complete video script: {{research_output}}",
+      "saveAs": "script_output"
+    },
+    {
+      "id": "final_package",
+      "tool": "mock",
+      "mode": "single",
+      "prompt": "Combine everything into one final package:\nResearch: {{research_output}}\nScript: {{script_output}}",
+      "saveAs": "final_package"
+    }
+  ]
+}
