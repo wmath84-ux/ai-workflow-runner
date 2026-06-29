@@ -11,6 +11,7 @@ CREATE TABLE IF NOT EXISTS workflows (
 CREATE TABLE IF NOT EXISTS runs (
   id TEXT PRIMARY KEY,
   workflow_id TEXT,
+  workflow_name TEXT NOT NULL DEFAULT 'Untitled Workflow',
   status TEXT NOT NULL DEFAULT 'pending',
   input_json TEXT DEFAULT '{}',
   checkpoint_json TEXT DEFAULT '{}',
@@ -55,4 +56,13 @@ CREATE TABLE IF NOT EXISTS settings (
   value_json TEXT NOT NULL,
   created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+
+CREATE TABLE IF NOT EXISTS checkpoints (
+  run_id TEXT PRIMARY KEY,
+  checkpoint_json TEXT NOT NULL,
+  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (run_id) REFERENCES runs(id)
 );

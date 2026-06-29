@@ -1,25 +1,30 @@
 {
-  "name": "Sample YouTube Package Workflow",
-  "description": "Foundation-only sample showing sequential AI content steps for a YouTube package.",
+  "workflowName": "YouTube Video Full Package",
+  "description": "Creates research, script, titles, and a final package using sequential mock steps.",
   "inputs": {
-    "topic": "How small teams can use AI workflow automation",
-    "audience": "startup operators"
+    "topic": "Newton's Laws of Motion"
   },
   "steps": [
     {
-      "id": "outline",
-      "connector": "generic",
-      "prompt": "Create a concise video outline for {{topic}} aimed at {{audience}}."
+      "id": "research",
+      "tool": "mock",
+      "mode": "single",
+      "prompt": "Research this topic deeply: {{topic}}",
+      "saveAs": "research_output"
     },
     {
-      "id": "title-options",
-      "connector": "generic",
-      "prompt": "Using the outline, suggest five compelling YouTube titles."
+      "id": "script",
+      "tool": "mock",
+      "mode": "single",
+      "prompt": "Using this research, write a complete video script: {{research_output}}",
+      "saveAs": "script_output"
     },
     {
-      "id": "description",
-      "connector": "generic",
-      "prompt": "Draft a YouTube description and chapter list for the selected outline."
+      "id": "final_package",
+      "tool": "mock",
+      "mode": "single",
+      "prompt": "Combine everything into one final package:\nResearch: {{research_output}}\nScript: {{script_output}}",
+      "saveAs": "final_package"
     }
   ]
 }

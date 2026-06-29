@@ -42,3 +42,30 @@ h1 { margin-bottom: 0; font-size: clamp(1.8rem, 3vw, 2.6rem); }
   .twoColumn { grid-template-columns: 1fr; }
   .settingsList div { grid-template-columns: 1fr; }
 }
+.workflowTextarea { width: 100%; min-height: 460px; margin-top: 14px; padding: 16px; border: 1px solid #cbd5e1; border-radius: 14px; background: #0f172a; color: #e2e8f0; line-height: 1.5; }
+.buttonRow { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 14px; }
+.primaryAction, .secondaryButton { border: 0; border-radius: 12px; padding: 11px 14px; cursor: pointer; font-weight: 700; }
+.primaryAction { background: #4f46e5; color: #fff; }
+.secondaryButton { background: #e0e7ff; color: #3730a3; }
+.primaryAction:disabled, .secondaryButton:disabled { cursor: not-allowed; opacity: 0.6; }
+.successBox, .errorBox { border-radius: 14px; padding: 14px; margin: 12px 0; }
+.successBox { background: #dcfce7; color: #166534; border: 1px solid #86efac; }
+.errorBox { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
+.runLog { min-height: 90px; margin: 16px 0; padding: 14px; border-radius: 14px; background: #f8fafc; border: 1px solid #e2e8f0; color: #475569; }
+.runLog p { margin-bottom: 8px; }
+.stepStatusList { display: grid; gap: 10px; padding: 0; list-style: none; }
+.stepStatus { display: flex; justify-content: space-between; gap: 12px; padding: 12px 14px; border-radius: 12px; border: 1px solid #e2e8f0; background: #fff; }
+.stepStatus.completed { border-color: #86efac; background: #f0fdf4; }
+.stepStatus.running { border-color: #93c5fd; background: #eff6ff; }
+.stepStatus.failed { border-color: #fca5a5; background: #fef2f2; }
+.outputList details { margin-top: 12px; border: 1px solid #e2e8f0; border-radius: 12px; padding: 12px; background: #f8fafc; }
+.outputList pre { white-space: pre-wrap; overflow: auto; }
+.runList, .workflowGrid { display: grid; gap: 12px; margin-top: 16px; }
+.runListItem, .workflowCard { display: grid; gap: 6px; width: 100%; text-align: left; border: 1px solid #e2e8f0; border-radius: 14px; padding: 14px; background: #fff; color: inherit; }
+.runListItem { cursor: pointer; }
+.runListItem span { width: fit-content; border-radius: 999px; padding: 4px 9px; background: #eef2ff; color: #3730a3; font-weight: 700; }
+.workflowCard { grid-template-columns: 1fr auto; align-items: center; }
+.workflowCard h3 { margin: 0 0 6px; }
+.workflowCard p { margin: 0; color: #64748b; }
+.runPanelGrid { align-items: start; }
+@media (max-width: 980px) { .runPanelGrid { grid-template-columns: 1fr; } .workflowTextarea { min-height: 340px; } }

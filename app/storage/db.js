@@ -19,10 +19,19 @@ export function initializeDatabase() {
 
   const schema = fs.readFileSync(path.join(__dirname, 'schema.sql'), 'utf8');
   database.exec(schema);
+  migrateDatabase(database);
   logger.info(`SQLite database initialized at ${dbPath}`);
   return database;
 }
 
 export function getDatabase() {
   return database ?? initializeDatabase();
+}
+
+
+function migrateDatabase(db) {
+  const runColumns = db.prepare("PRAGMA table_info(runs)").all().map((column) => column.name);
+  if (!runColumns.includes('workflow_name')) {
+    db.prepare("ALTER TABLE runs ADD COLUMN workflow_name TEXT NOT NULL DEFAULT 'Untitled Workflow'").run();
+  }
 }
