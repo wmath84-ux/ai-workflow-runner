@@ -15,6 +15,7 @@ const appAPI = {
   saveSettings: (settings) => ipcRenderer.invoke('settings:save', settings),
   validateWorkflow: (workflow) => unwrap(ipcRenderer.invoke('workflow:validate', workflow)),
   runWorkflow: (workflow) => unwrap(ipcRenderer.invoke('workflow:run', workflow)),
+  retryPausedStep: (runId) => unwrap(ipcRenderer.invoke('workflow:retry-paused-step', runId)),
   listWorkflows: () => unwrap(ipcRenderer.invoke('workflow:list')),
   getWorkflow: (workflowId) => unwrap(ipcRenderer.invoke('workflow:get', workflowId)),
   listRuns: () => unwrap(ipcRenderer.invoke('runs:list')),

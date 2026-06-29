@@ -2,6 +2,7 @@ import React, { useMemo, useState } from 'react';
 import Card from '../components/Card.jsx';
 import RunLog from '../components/RunLog.jsx';
 import StepStatusList from '../components/StepStatusList.jsx';
+import ManualInterventionBox from '../components/ManualInterventionBox.jsx';
 
 const sampleWorkflow = {
   workflowName: 'YouTube Video Full Package',
@@ -21,6 +22,7 @@ export default function RunPanel() {
   const [logs, setLogs] = useState([]);
   const [isRunning, setIsRunning] = useState(false);
   const [browserStatus, setBrowserStatus] = useState(null);
+  const [genericUrl, setGenericUrl] = useState('https://example.com');
 
   const parsedWorkflow = useMemo(() => {
     try { return { workflow: JSON.parse(workflowText), error: null }; }
@@ -57,6 +59,21 @@ export default function RunPanel() {
     }
   }
 
+  async function retryPausedStep() {
+    if (!runResult?.runId) return;
+    setIsRunning(true);
+    setLogs((current) => [...current, `Retrying paused step for run ${runResult.runId}.`]);
+    try {
+      const result = await window.appAPI.retryPausedStep(runResult.runId);
+      setRunResult(result);
+      setLogs((current) => [...current, `Retry finished with status ${result.status}.`]);
+    } catch (error) {
+      setLogs((current) => [...current, `Retry failed: ${error.message}`]);
+    } finally {
+      setIsRunning(false);
+    }
+  }
+
   async function runCurrentWorkflow() {
     const validationResult = await validateCurrentWorkflow();
     if (!validationResult?.valid) return;
@@ -75,8 +92,13 @@ export default function RunPanel() {
 
   return (
     <div className="grid twoColumn runPanelGrid">
+      <Card title="Workflow Mode Info">
+        <p><strong>Mock:</strong> runs without a browser. <strong>ChatGPT/Gemini/Generic:</strong> require the persistent browser. ChatGPT and Gemini require manual login.</p>
+        <p>For Gemini workflows, make sure Gemini is logged in inside the persistent browser. Generic connector needs a valid URL and safe selectors for best results.</p>
+      </Card>
+
       <Card title="Browser Preparation">
-        <p>Browser automation is not connected to workflow execution yet, but you can prepare manual login sessions now.</p>
+        <p>Use these controls before running a ChatGPT workflow. The app will not automate login.</p>
         <p><strong>Status:</strong> {browserStatus?.status ?? 'unknown'} · <strong>Tabs:</strong> {browserStatus?.pages ?? 0}</p>
         <div className="buttonRow">
           <button className="secondaryButton" onClick={async () => { await window.appAPI.launchBrowser(); await refreshBrowserStatus(); }}>Launch Browser</button>
@@ -84,6 +106,8 @@ export default function RunPanel() {
           <button className="secondaryButton" onClick={() => openTool('gemini')}>Open Gemini</button>
           <button className="secondaryButton" onClick={() => openTool('claude')}>Open Claude</button>
           <button className="secondaryButton" onClick={() => openTool('perplexity')}>Open Perplexity</button>
+          <input className="inlineInput" value={genericUrl} onChange={(event) => setGenericUrl(event.target.value)} />
+          <button className="secondaryButton" onClick={async () => { await window.appAPI.openUrl(genericUrl); await refreshBrowserStatus(); }}>Open Generic URL</button>
         </div>
       </Card>
 
@@ -93,6 +117,7 @@ export default function RunPanel() {
         <div className="buttonRow">
           <button className="secondaryButton" onClick={validateCurrentWorkflow} disabled={isRunning}>Validate Workflow</button>
           <button className="primaryAction" onClick={runCurrentWorkflow} disabled={isRunning}>{isRunning ? 'Running…' : 'Run Workflow'}</button>
+          <button className="secondaryButton" onClick={retryPausedStep} disabled={isRunning || runResult?.status !== 'paused'}>Retry Paused Step</button>
         </div>
       </Card>
 
@@ -105,6 +130,13 @@ export default function RunPanel() {
             </div>
           )
         ) : <div className="emptyState">Validation results will appear here.</div>}
+        {runResult ? <div className="runSummaryBox">
+          <p><strong>Current run status:</strong> {runResult.status}</p>
+          {runResult.pausedStepId ? <p><strong>Paused step:</strong> {runResult.pausedStepId}</p> : null}
+          {runResult.reason ? <p><strong>Paused reason:</strong> {runResult.reason}</p> : null}
+          {runResult.message ? <p><strong>Message:</strong> {runResult.message}</p> : null}
+        </div> : null}
+        {runResult?.status === 'paused' ? <ManualInterventionBox message={runResult.message} onOpenChatGPT={() => openTool('chatgpt')} onRetry={retryPausedStep} /> : null}
         <RunLog messages={logs} />
         <StepStatusList steps={runResult?.steps ?? []} />
       </Card>
