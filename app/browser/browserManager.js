@@ -17,6 +17,25 @@ function serializePage(page, index) {
   };
 }
 
+function getChromiumLaunchArgs(extraArgs = []) {
+  return [
+    '--no-sandbox',
+    '--disable-setuid-sandbox',
+    '--disable-dev-shm-usage',
+    '--disable-gpu',
+    '--disable-software-rasterizer',
+    '--disable-features=VizDisplayCompositor,UseChromeOSDirectVideoDecoder',
+    '--disable-background-networking',
+    '--disable-background-timer-throttling',
+    '--disable-renderer-backgrounding',
+    '--disable-sync',
+    '--no-first-run',
+    '--no-default-browser-check',
+    '--window-size=1366,900',
+    ...extraArgs
+  ];
+}
+
 export async function launchBrowser(options = {}) {
   if (browserState.context) return getBrowserStatus();
   if (browserState.launchingPromise) return browserState.launchingPromise;
@@ -33,7 +52,11 @@ export async function launchBrowser(options = {}) {
       const context = await chromium.launchPersistentContext(profilePath, {
         headless: false,
         viewport: options.viewport ?? { width: 1366, height: 900 },
-        acceptDownloads: true
+        acceptDownloads: true,
+        chromiumSandbox: false,
+        ignoreHTTPSErrors: true,
+        timeout: options.timeout ?? 60000,
+        args: getChromiumLaunchArgs(options.args ?? [])
       });
 
       browserState.context = context;
@@ -99,7 +122,7 @@ export async function getBrowserStatus() {
 export async function openUrl(url, options = {}) {
   if (!url || typeof url !== 'string') throw new Error('A valid URL is required.');
   if (!browserState.context) await launchBrowser(options);
-  if (!browserState.context) throw new Error(browserState.lastError ?? 'Browser is not running.');
+  if (!browserState.context) throw new Error(browserState.lastError?.message ?? browserState.lastError ?? 'Browser is not running.');
   const page = await browserState.context.newPage();
   await page.goto(url, { waitUntil: 'domcontentloaded', timeout: options.timeout ?? 30000 });
   await page.bringToFront();
