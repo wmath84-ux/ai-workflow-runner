@@ -1,4 +1,4 @@
-import { app, BrowserWindow } from 'electron';
+import { app, BrowserWindow, Menu, screen } from 'electron';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { initializeDatabase } from './storage/db.js';
@@ -25,17 +25,34 @@ import { registerAppIpc } from './ipc/app.ipc.js';
 import { seedDefaultPromptsIfEmpty } from './storage/prompts.js';
 import { seedDefaultTemplatesIfEmpty } from './storage/templates.js';
 
+app.commandLine.appendSwitch('no-sandbox');
+app.commandLine.appendSwitch('disable-setuid-sandbox');
+app.commandLine.appendSwitch('disable-gpu');
+app.commandLine.appendSwitch('disable-dev-shm-usage');
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const isDevelopment = Boolean(process.env.VITE_DEV_SERVER_URL);
 
+function getWindowSize() {
+  const display = screen.getPrimaryDisplay();
+  const { width, height } = display.workAreaSize;
+  return {
+    width: Math.max(980, Math.min(width, 1440)),
+    height: Math.max(680, Math.min(height, 920))
+  };
+}
+
 function createMainWindow() {
+  const size = getWindowSize();
   const mainWindow = new BrowserWindow({
-    width: 1280,
-    height: 840,
-    minWidth: 900,
-    minHeight: 620,
+    width: size.width,
+    height: size.height,
+    minWidth: 760,
+    minHeight: 520,
     title: 'AI Workflow Runner',
+    autoHideMenuBar: true,
+    backgroundColor: '#eef2f7',
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
@@ -43,6 +60,10 @@ function createMainWindow() {
       sandbox: false
     }
   });
+
+  Menu.setApplicationMenu(null);
+  mainWindow.maximize();
+  mainWindow.webContents.setZoomFactor(Number(process.env.APP_ZOOM_FACTOR || 0.85));
 
   if (isDevelopment) {
     mainWindow.loadURL(process.env.VITE_DEV_SERVER_URL);
