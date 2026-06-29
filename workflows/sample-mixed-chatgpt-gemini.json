@@ -1,0 +1,23 @@
+{
+  "workflowName": "Mixed ChatGPT Gemini Test",
+  "description": "Uses ChatGPT for explanation and Gemini for quiz generation.",
+  "inputs": {
+    "topic": "Photosynthesis"
+  },
+  "steps": [
+    {
+      "id": "chatgpt_explanation",
+      "tool": "chatgpt",
+      "mode": "single",
+      "prompt": "Explain this topic in simple student-friendly language: {{topic}}",
+      "saveAs": "explanation"
+    },
+    {
+      "id": "gemini_quiz",
+      "tool": "gemini",
+      "mode": "single",
+      "prompt": "Create 5 quiz questions from this explanation:\n\n{{explanation}}",
+      "saveAs": "quiz"
+    }
+  ]
+}

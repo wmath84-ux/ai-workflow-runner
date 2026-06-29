@@ -1,0 +1,10 @@
+import { validateWorkflow } from '../runner/workflowValidator.js';
+import { extractVariables } from '../runner/variableResolver.js';
+import { isConnectorImplemented } from '../connectors/connectorRegistry.js';
+import { ensureDir, projectPath } from '../shared/fileUtils.js';
+import { getDatabase } from '../storage/db.js';
+function flatten(steps=[]){return steps.flatMap(s=>s.mode==='parallel'?[...(s.steps??[])]:[s]);}
+export async function detectRequiredTools(workflow){return [...new Set(flatten(workflow?.steps??[]).map(s=>s.tool).filter(Boolean))];}
+export async function detectRequiredInputs(workflow){const vars=new Set(); for(const step of flatten(workflow?.steps??[])) for(const v of extractVariables(step.prompt??'')) if(Object.prototype.hasOwnProperty.call(workflow.inputs??{},v)) vars.add(v); return [...vars];}
+export async function detectBrowserRequirements(workflow){const tools=await detectRequiredTools(workflow); return tools.some(t=>['chatgpt','gemini','generic'].includes(t));}
+export async function runWorkflowPreflightChecks(workflow){const warnings=[]; const errors=[]; const validation=validateWorkflow(workflow); if(!validation.valid) errors.push(...validation.errors.map(e=>({type:'validation',message:`${e.field}: ${e.message}`}))); const requiredTools=await detectRequiredTools(workflow); const requiredInputs=await detectRequiredInputs(workflow); for(const input of requiredInputs) if(workflow.inputs?.[input] === '' || workflow.inputs?.[input] == null) errors.push({type:'missing_input',message:`Required input ${input} is empty.`}); for(const tool of requiredTools) if(!isConnectorImplemented(tool)) errors.push({type:'connector_not_implemented',message:`Connector ${tool} is not implemented.`}); const browserRequired=await detectBrowserRequirements(workflow); if(browserRequired) warnings.push('Browser-based workflow: confirm manual login/readiness before running.'); try{await ensureDir(projectPath('outputs')); getDatabase().prepare('SELECT 1').get();}catch(error){errors.push({type:'storage',message:error.message});} return {ok:errors.length===0,canRun:errors.length===0,warnings,errors,requiredTools,requiredInputs,browserRequired};}

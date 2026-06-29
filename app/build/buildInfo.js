@@ -1,0 +1,1 @@
+export function getBuildInfo(){return { buildDate: process.env.BUILD_DATE ?? new Date().toISOString(), environment: process.env.NODE_ENV ?? (process.env.VITE_DEV_SERVER_URL ? 'development' : 'production'), platform: process.platform };}

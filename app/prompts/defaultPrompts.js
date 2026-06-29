@@ -1,0 +1,15 @@
+export const defaultPrompts = [
+  { id: 'deep_research', title: 'Deep Research', description: 'Research a topic thoroughly.', category: 'Research', tags: ['research'], toolHint: 'any', promptText: 'Research this topic deeply and organize the key findings: {{topic}}' },
+  { id: 'student_explanation', title: 'Student-Friendly Explanation', description: 'Explain clearly for students.', category: 'Education', tags: ['students', 'explain'], toolHint: 'any', promptText: 'Explain {{topic}} in simple language for {{audience}}.' },
+  { id: 'youtube_titles', title: 'YouTube Title Generator', description: 'Generate video titles.', category: 'YouTube', tags: ['youtube', 'titles'], toolHint: 'chatgpt', promptText: 'Create 20 engaging YouTube titles about {{topic}} for {{targetAudience}}.' },
+  { id: 'youtube_script', title: 'YouTube Script Writer', description: 'Write a full script.', category: 'YouTube', tags: ['script'], toolHint: 'chatgpt', promptText: 'Write a {{videoLength}} video script about {{topic}} in a {{tone}} tone.' },
+  { id: 'thumbnail_prompts', title: 'Thumbnail Prompt Generator', description: 'Create thumbnail ideas.', category: 'YouTube', tags: ['thumbnail'], toolHint: 'gemini', promptText: 'Create 10 viral thumbnail prompts for this script:\n\n{{script_output}}' },
+  { id: 'quiz_generator', title: 'Quiz Generator', description: 'Create quiz questions.', category: 'Education', tags: ['quiz'], toolHint: 'any', promptText: 'Create 5 quiz questions from this explanation:\n\n{{explanation}}' },
+  { id: 'code_bug_finder', title: 'Code Bug Finder', description: 'Find likely bugs.', category: 'Coding', tags: ['code', 'bugs'], toolHint: 'any', promptText: 'Find bugs in this code and explain fixes:\n\n{{code}}\n\nBug: {{bugDescription}}' },
+  { id: 'code_improver', title: 'Code Improvement', description: 'Improve code quality.', category: 'Coding', tags: ['code'], toolHint: 'any', promptText: 'Improve this code for readability and reliability:\n\n{{code}}' },
+  { id: 'summary_prompt', title: 'Summary Prompt', description: 'Summarize text.', category: 'Summary', tags: ['summary'], toolHint: 'any', promptText: 'Summarize the following in {{outputStyle}} style:\n\n{{source_text}}' },
+  { id: 'comparison_prompt', title: 'Comparison Prompt', description: 'Compare two items.', category: 'Comparison', tags: ['compare'], toolHint: 'any', promptText: 'Compare {{item_a}} and {{item_b}} with pros, cons, and a final recommendation.' },
+  { id: 'marketing_copy', title: 'Marketing Copy', description: 'Create sales copy.', category: 'Marketing', tags: ['marketing'], toolHint: 'any', promptText: 'Write persuasive copy for {{productName}} targeting {{targetCustomer}} on {{platform}}.' },
+  { id: 'final_packager', title: 'Final Package Combiner', description: 'Combine workflow outputs.', category: 'Final Packaging', tags: ['final'], toolHint: 'chatgpt', promptText: 'Combine these outputs into one final package:\n\n{{research_output}}\n\n{{script_output}}\n\n{{titles_output}}' }
+];
+export function getDefaultPrompts() { return defaultPrompts; }

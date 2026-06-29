@@ -1,0 +1,15 @@
+{
+  "workflowName": "YouTube Full Package Template",
+  "description": "Template workflow for research, script, parallel assets, and final package.",
+  "inputs": { "topic": "", "targetAudience": "students", "videoLength": "8 minutes", "tone": "simple" },
+  "inputSchema": {
+    "topic": { "type": "text", "label": "Topic", "required": true, "default": "" },
+    "targetAudience": { "type": "text", "label": "Target Audience", "required": true, "default": "students" },
+    "videoLength": { "type": "text", "label": "Video Length", "required": true, "default": "8 minutes" },
+    "tone": { "type": "select", "label": "Tone", "required": true, "default": "simple", "options": ["simple", "professional", "friendly", "deep", "motivational"] }
+  },
+  "steps": [
+    { "id": "research", "tool": "mock", "mode": "single", "prompt": "Research {{topic}} for {{targetAudience}}.", "saveAs": "research_output" },
+    { "id": "script", "tool": "mock", "mode": "single", "prompt": "Write a {{videoLength}} script in a {{tone}} tone using:\n\n{{research_output}}", "saveAs": "script_output" }
+  ]
+}

@@ -1,0 +1,2 @@
+import React from 'react';
+export default function RepairActionPanel({ onRepair }) { return <section className="card"><h2>Repair Actions</h2><div className="buttonRow"><button className="secondaryButton" onClick={()=>onRepair({type:'folders'})}>Recreate Missing Folders</button><button className="secondaryButton" onClick={()=>onRepair({type:'stuck-runs',status:'paused'})}>Pause Stuck Runs</button><button className="secondaryButton" onClick={()=>onRepair({type:'settings'})}>Reset Broken Settings</button></div></section>; }

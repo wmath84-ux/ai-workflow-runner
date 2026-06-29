@@ -1,0 +1,5 @@
+function replaceTokenString(value, inputValues){ return String(value).replace(/{{\s*([^{}]+?)\s*}}/g, (match, raw)=> Object.prototype.hasOwnProperty.call(inputValues, raw.trim()) ? String(inputValues[raw.trim()] ?? '') : match); }
+export function replaceTemplateInputs(templateJson, inputValues){ const cloned=JSON.parse(JSON.stringify(templateJson)); cloned.workflowName=replaceTokenString(cloned.workflowName ?? 'Workflow', inputValues); cloned.description=replaceTokenString(cloned.description ?? '', inputValues); cloned.inputs={...(cloned.inputs??{}),...inputValues}; return cloned; }
+export function generateWorkflowName(template, inputValues){ return replaceTokenString(template.templateJson?.workflowName ?? template.name, inputValues); }
+export function cloneTemplate(template){ return JSON.parse(JSON.stringify(template)); }
+export function createWorkflowFromTemplate(template, inputValues, options={}){ const workflow=replaceTemplateInputs(template.templateJson ?? template.template_json ?? {}, inputValues); if(options.workflowName) workflow.workflowName=options.workflowName; return workflow; }
