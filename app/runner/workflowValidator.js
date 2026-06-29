@@ -1,7 +1,8 @@
 import { extractVariables } from './variableResolver.js';
 
-const IMPLEMENTED_TOOLS = new Set(['mock', 'chatgpt']);
-const REGISTERED_UNIMPLEMENTED_TOOLS = new Set(['gemini', 'claude', 'perplexity', 'generic']);
+const IMPLEMENTED_TOOLS = new Set(['mock', 'chatgpt', 'gemini', 'generic']);
+const REGISTERED_UNIMPLEMENTED_TOOLS = new Set(['claude', 'perplexity']);
+const GENERIC_SELECTOR_KEYS = new Set(['input', 'send', 'response', 'generating']);
 
 function addError(errors, field, message) {
   errors.push({ field, message });
@@ -66,6 +67,26 @@ export function validateWorkflow(workflow) {
           addError(errors, `${fieldPrefix}.tool`, `Tool "${step.tool}" is registered but not implemented yet. Use "mock" or "chatgpt" for now.`);
         } else {
           addError(errors, `${fieldPrefix}.tool`, `Unknown tool "${step.tool}". Use "mock" or "chatgpt" for now.`);
+        }
+      }
+
+
+      if (step.tool === 'generic') {
+        if (!step.url || typeof step.url !== 'string') {
+          addError(errors, `${fieldPrefix}.url`, 'Generic connector steps require a url string.');
+        }
+        if (step.selectors !== undefined) {
+          if (!isPlainObject(step.selectors)) {
+            addError(errors, `${fieldPrefix}.selectors`, 'Generic selectors must be an object.');
+          } else {
+            for (const [selectorKey, selectorValue] of Object.entries(step.selectors)) {
+              if (!GENERIC_SELECTOR_KEYS.has(selectorKey)) {
+                addError(errors, `${fieldPrefix}.selectors.${selectorKey}`, 'Unsupported selector group. Use input, send, response, or generating.');
+              } else if (!Array.isArray(selectorValue) || selectorValue.some((selector) => typeof selector !== 'string')) {
+                addError(errors, `${fieldPrefix}.selectors.${selectorKey}`, 'Selector group must be an array of strings.');
+              }
+            }
+          }
         }
       }
 

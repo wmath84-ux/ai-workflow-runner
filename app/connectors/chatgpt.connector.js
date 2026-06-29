@@ -1,4 +1,5 @@
-import { clickFirstVisible, firstVisibleLocator, getLastTextFromSelectors, safeTextContent, waitForTextStable } from './selectorUtils.js';
+import { firstVisibleLocator, getLastTextFromSelectors, safeTextContent } from './selectorUtils.js';
+import { waitForStableResponse } from './responseWaiter.js';
 import { manualIntervention } from './connector.interface.js';
 
 const PROMPT_SELECTORS = ['textarea', "[contenteditable='true']", "div[contenteditable='true']", 'form textarea', 'main textarea'];
@@ -100,32 +101,15 @@ export const chatgptConnector = {
   },
 
   async waitForDone(page, options = {}) {
-    const responseTimeoutMs = options.responseTimeoutMs ?? 180000;
-    const stableMs = options.stableMs ?? 2500;
-    const pollMs = options.pollMs ?? 750;
-    const startedAt = Date.now();
-    let latestText = '';
-
-    while (Date.now() - startedAt < responseTimeoutMs) {
-      const latest = await getLastTextFromSelectors(page, RESPONSE_SELECTORS);
-      if (latest.text) latestText = latest.text;
-
-      const stopVisible = await Promise.all(STOP_SELECTORS.map(async (selector) => {
-        const locator = page.locator(selector).last();
-        return (await locator.count().catch(() => 0)) > 0 && await locator.isVisible().catch(() => false);
-      })).then((values) => values.some(Boolean));
-
-      if (latest.locator && !stopVisible) {
-        const stableText = await waitForTextStable(latest.locator, { stableMs, pollMs, timeoutMs: Math.min(15000, responseTimeoutMs) }).catch(() => '');
-        if (stableText) return { ok: true, output: stableText };
-      }
-      await page.waitForTimeout(pollMs);
-    }
-
-    if (latestText) {
-      return { ok: true, warning: 'Response timed out after partial text was available.', output: latestText };
-    }
-    return manual('No ChatGPT response appeared before timeout. Check the browser manually, then retry.');
+    const waited = await waitForStableResponse(page, {
+      responseSelectors: RESPONSE_SELECTORS,
+      generatingSelectors: STOP_SELECTORS,
+      timeoutMs: options.responseTimeoutMs ?? options.timeoutMs ?? 180000,
+      stableMs: options.stableMs ?? 3000,
+      pollMs: options.pollMs ?? 750
+    });
+    if (!waited.ok) return manual(waited.message, { errorType: waited.errorType });
+    return { ok: true, output: waited.text, partial: waited.partial, warning: waited.warning };
   },
 
   async extractAnswer(page) {
@@ -160,7 +144,8 @@ export const chatgptConnector = {
         raw: {
           tool: this.name,
           ...extracted.raw,
-          warning: done.warning,
+          partial: Boolean(done.partial),
+          warning: done.warning ?? null,
           createdAt: new Date().toISOString()
         }
       };

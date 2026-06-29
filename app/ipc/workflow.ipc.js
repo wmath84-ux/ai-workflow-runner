@@ -38,7 +38,10 @@ export function registerWorkflowIpc() {
       return success([
         ...listWorkflows(),
         { id: 'sample-youtube-package', name: 'Sample YouTube Package Workflow', status: 'sample', description: 'Bundled mock sample workflow' },
-        { id: 'sample-chatgpt-basic', name: 'ChatGPT Basic Test', status: 'sample', description: 'Bundled ChatGPT browser connector sample' }
+        { id: 'sample-chatgpt-basic', name: 'ChatGPT Basic Test', status: 'sample', description: 'Bundled ChatGPT browser connector sample' },
+        { id: 'sample-gemini-basic', name: 'Gemini Basic Test', status: 'sample', description: 'Bundled Gemini browser connector sample' },
+        { id: 'sample-mixed-chatgpt-gemini', name: 'Mixed ChatGPT Gemini Test', status: 'sample', description: 'Bundled mixed ChatGPT and Gemini sample' },
+        { id: 'sample-generic-basic', name: 'Generic Connector Basic Test', status: 'sample', description: 'Bundled generic connector sample' }
       ]);
     } catch (error) { return failure(error); }
   });
@@ -47,6 +50,9 @@ export function registerWorkflowIpc() {
     try {
       if (workflowId === 'sample-youtube-package') return success(await readWorkflowFile('sample-youtube-package.json'));
       if (workflowId === 'sample-chatgpt-basic') return success(await readWorkflowFile('sample-chatgpt-basic.json'));
+      if (workflowId === 'sample-gemini-basic') return success(await readWorkflowFile('sample-gemini-basic.json'));
+      if (workflowId === 'sample-mixed-chatgpt-gemini') return success(await readWorkflowFile('sample-mixed-chatgpt-gemini.json'));
+      if (workflowId === 'sample-generic-basic') return success(await readWorkflowFile('sample-generic-basic.json'));
       return success(getWorkflowById(workflowId));
     } catch (error) { return failure(error); }
   });

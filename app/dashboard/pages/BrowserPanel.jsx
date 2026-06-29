@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import BrowserStatusCard from '../components/BrowserStatusCard.jsx';
 import Card from '../components/Card.jsx';
 import ToolLoginCard from '../components/ToolLoginCard.jsx';
+import ConnectorStatusList from '../components/ConnectorStatusList.jsx';
 
 export default function BrowserPanel() {
   const [status, setStatus] = useState(null);
@@ -9,6 +10,7 @@ export default function BrowserPanel() {
   const [tabs, setTabs] = useState([]);
   const [profileInfo, setProfileInfo] = useState(null);
   const [message, setMessage] = useState('');
+  const [genericUrl, setGenericUrl] = useState('https://example.com');
 
   async function refreshAll() {
     const [nextStatus, nextTabs, nextProfile, nextConnectors] = await Promise.all([
@@ -49,17 +51,23 @@ export default function BrowserPanel() {
         <div className="buttonRow">
           <button className="primaryAction" onClick={() => runAction(() => window.appAPI.launchBrowser(), 'Browser launched.')}>Launch Browser</button>
           <button className="primaryAction" onClick={() => runAction(() => window.appAPI.openTool('chatgpt'), 'ChatGPT opened.')}>Open ChatGPT</button>
+          <button className="primaryAction" onClick={() => runAction(() => window.appAPI.openTool('gemini'), 'Gemini opened.')}>Open Gemini</button>
           <button className="secondaryButton" onClick={() => runAction(() => window.appAPI.closeBrowser(), 'Browser closed.')}>Close Browser</button>
           <button className="secondaryButton" onClick={() => runAction(refreshAll)}>Refresh Status</button>
         </div>
+        <div className="buttonRow"><input className="inlineInput" value={genericUrl} onChange={(event) => setGenericUrl(event.target.value)} placeholder="https://example.com" /><button className="secondaryButton" onClick={() => runAction(() => window.appAPI.openUrl(genericUrl), 'Generic URL opened.')}>Open Generic URL</button></div>
         {message ? <div className="emptyState">{message}</div> : null}
+      </Card>
+
+      <Card title="Connector Status">
+        <ConnectorStatusList connectors={connectors} />
       </Card>
 
       <Card title="Manual Login">
         <p>ChatGPT connector is implemented. Login manually once, keep the browser profile, and do not clear it unless you want to reset login.</p>
         <div className="toolGrid">
           {connectors.filter((connector) => ['chatgpt', 'gemini', 'claude', 'perplexity'].includes(connector.name)).map((connector) => (
-            <ToolLoginCard key={connector.name} connector={connector} onOpen={(toolName) => runAction(() => window.appAPI.openTool(toolName), `${connector.label} opened.`)} />
+            <ToolLoginCard key={connector.name} connector={connector} onOpen={(toolName) => connector.implemented ? runAction(() => window.appAPI.openTool(toolName), `${connector.label} opened.`) : null} />
           ))}
         </div>
       </Card>

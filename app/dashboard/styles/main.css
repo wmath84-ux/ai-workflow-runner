@@ -88,3 +88,6 @@ h1 { margin-bottom: 0; font-size: clamp(1.8rem, 3vw, 2.6rem); }
 .manualInterventionBox, .runSummaryBox { border: 1px solid #f59e0b; background: #fffbeb; color: #78350f; border-radius: 14px; padding: 14px; margin: 14px 0; }
 .manualInterventionBox h3 { margin-top: 0; }
 .stepStatus.paused { border-color: #f59e0b; background: #fffbeb; }
+.connectorStatusList { display: grid; gap: 10px; }
+.connectorStatusItem { display: grid; grid-template-columns: 1fr auto auto; gap: 10px; align-items: center; border: 1px solid #e2e8f0; border-radius: 12px; padding: 10px 12px; }
+.inlineInput { border: 1px solid #cbd5e1; border-radius: 10px; padding: 10px 12px; min-width: min(100%, 320px); }

@@ -4,7 +4,7 @@ AI Workflow Runner is a desktop app foundation for running structured AI workflo
 
 ## Current status
 
-Command 4 adds the first real browser connector for ChatGPT: prompt fill, send, response wait, answer extraction, workflow pause on manual intervention, and retry for paused steps. Login remains manual and no CAPTCHA, rate-limit, or bypass automation is implemented.
+Command 5 adds the Gemini connector, a conservative Generic Website connector fallback, shared stable-response waiting, and mixed ChatGPT + Gemini workflows. Login remains manual and no CAPTCHA, rate-limit, stealth, or bypass automation is implemented.
 
 ## Commands
 
@@ -75,6 +75,27 @@ Command 4 Status:
 - Paused ChatGPT steps can be retried.
 - Gemini, Claude, and Perplexity remain unimplemented until later commands.
 
+
+## Gemini, mixed, and generic workflow tests
+
+1. Run the app with `npm run dev`.
+2. Open the Browser Panel.
+3. Launch the persistent browser.
+4. Open Gemini and log in manually.
+5. Run `workflows/sample-gemini-basic.json` from the Run Panel.
+6. Run `workflows/sample-mixed-chatgpt-gemini.json` after confirming both ChatGPT and Gemini are logged in.
+7. For generic testing, paste `workflows/sample-generic-basic.json`, update `url` and selector arrays for your target site, then run.
+8. Check the `outputs/` folder and Results page for Markdown/JSON results.
+
+Command 5 Status:
+
+- Gemini connector added.
+- Generic connector fallback added.
+- Shared response waiting system added.
+- Mixed ChatGPT + Gemini workflows supported.
+- Claude and Perplexity are still placeholders.
+- Parallel workflow execution is still not implemented.
+
 ## Folder structure
 
 - `app/main.js` — Electron main process and lifecycle handling.
@@ -84,7 +105,7 @@ Command 4 Status:
 - `app/storage/` — SQLite schema and helper modules for workflows, runs, checkpoints, and results.
 - `app/runner/` — workflow validator, variable resolver, sequential engine, checkpoint manager, retry wrapper, mock runner, and output saver.
 - `app/browser/` — Playwright persistent Chromium browser manager, profile utilities, tab manager, and browser state helpers.
-- `app/connectors/` — connector registry, ChatGPT browser connector, selector helpers, and placeholders for future AI web connectors.
+- `app/connectors/` — connector registry, ChatGPT/Gemini/Generic browser connectors, selector helpers, shared response waiter, and placeholders for future AI web connectors.
 - `app/shared/` — shared constants, path helpers, and logging.
 - `workflows/` — sample workflow JSON files.
 - `outputs/` — local workflow output directory; runtime files are ignored by Git.
@@ -92,8 +113,8 @@ Command 4 Status:
 
 ## Next planned parts
 
-1. Gemini connector.
-2. Generic connector fallback.
-3. Stronger response completion detection.
+1. Parallel steps.
+2. Branch/group execution.
+3. Better run queue.
 4. Connector-safe error handling improvements.
 5. Full checkpoint resume execution.

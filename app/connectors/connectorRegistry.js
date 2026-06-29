@@ -1,12 +1,14 @@
 import { chatgptConnector } from './chatgpt.connector.js';
+import { geminiConnector } from './gemini.connector.js';
+import { genericConnector } from './generic.connector.js';
 
 export const connectors = {
-  mock: { name: 'mock', label: 'Mock Runner', startUrl: '', implemented: true },
-  chatgpt: chatgptConnector,
-  gemini: { name: 'gemini', label: 'Gemini', startUrl: 'https://gemini.google.com', implemented: false },
-  claude: { name: 'claude', label: 'Claude', startUrl: 'https://claude.ai', implemented: false },
-  perplexity: { name: 'perplexity', label: 'Perplexity', startUrl: 'https://www.perplexity.ai', implemented: false },
-  generic: { name: 'generic', label: 'Generic Website', startUrl: 'https://www.google.com', implemented: false }
+  mock: { name: 'mock', label: 'Mock Runner', startUrl: '', implemented: true, requiresManualLogin: false },
+  chatgpt: { ...chatgptConnector, requiresManualLogin: true },
+  gemini: geminiConnector,
+  generic: genericConnector,
+  claude: { name: 'claude', label: 'Claude', startUrl: 'https://claude.ai', implemented: false, requiresManualLogin: true },
+  perplexity: { name: 'perplexity', label: 'Perplexity', startUrl: 'https://www.perplexity.ai', implemented: false, requiresManualLogin: true }
 };
 
 export function getConnector(toolName) {
@@ -16,7 +18,13 @@ export function getConnector(toolName) {
 }
 
 export function listConnectors() {
-  return Object.values(connectors).map(({ name, label, startUrl, implemented }) => ({ name, label, startUrl, implemented: Boolean(implemented) }));
+  return Object.values(connectors).map(({ name, label, startUrl, implemented, requiresManualLogin }) => ({
+    name,
+    label,
+    startUrl,
+    implemented: Boolean(implemented),
+    requiresManualLogin: Boolean(requiresManualLogin)
+  }));
 }
 
 export function getConnectorStartUrl(toolName) {
@@ -25,4 +33,8 @@ export function getConnectorStartUrl(toolName) {
 
 export function isConnectorImplemented(toolName) {
   return Boolean(getConnector(toolName).implemented);
+}
+
+export function getImplementedConnectors() {
+  return listConnectors().filter((connector) => connector.implemented);
 }

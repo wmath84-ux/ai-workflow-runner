@@ -9,7 +9,7 @@ export default function ToolLoginCard({ connector, onOpen }) {
         <p><code>{connector.startUrl}</code></p>
         <small>Login manually once. This app will reuse the same browser profile later.</small>
       </div>
-      <OpenToolButton toolName={connector.name} onOpen={onOpen}>Open Login Page</OpenToolButton>
+      {connector.implemented ? <OpenToolButton toolName={connector.name} onOpen={onOpen}>Open Login Page</OpenToolButton> : <button className="secondaryButton" disabled>Coming in later command</button>}
     </article>
   );
 }

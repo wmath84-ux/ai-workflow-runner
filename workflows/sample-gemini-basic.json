@@ -1,0 +1,23 @@
+{
+  "workflowName": "Gemini Basic Test",
+  "description": "Runs two Gemini steps through the browser connector.",
+  "inputs": {
+    "topic": "Newton's Laws of Motion"
+  },
+  "steps": [
+    {
+      "id": "explain_topic",
+      "tool": "gemini",
+      "mode": "single",
+      "prompt": "Explain this topic in simple student-friendly language: {{topic}}",
+      "saveAs": "explanation"
+    },
+    {
+      "id": "make_quiz",
+      "tool": "gemini",
+      "mode": "single",
+      "prompt": "Create 5 quiz questions from this explanation:\n\n{{explanation}}",
+      "saveAs": "quiz"
+    }
+  ]
+}

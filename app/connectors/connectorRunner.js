@@ -1,16 +1,30 @@
 import { runMockStep } from '../runner/mockStepRunner.js';
-import { getBrowserContext } from '../browser/browserManager.js';
-import { openToolTab } from '../browser/tabManager.js';
+import { openToolTab, openUrlTab } from '../browser/tabManager.js';
 import { getConnector, isConnectorImplemented } from './connectorRegistry.js';
 
 function failure(message, extra = {}) {
   return { ok: false, recoverable: false, errorType: 'connector_error', message, ...extra };
 }
 
+function normalizeSuccess(result, step) {
+  return {
+    ok: true,
+    output: result.output,
+    raw: {
+      ...result.raw,
+      tool: step.tool,
+      stepId: step.id,
+      partial: Boolean(result.raw?.partial),
+      warning: result.raw?.warning ?? null,
+      createdAt: result.raw?.createdAt ?? new Date().toISOString()
+    }
+  };
+}
+
 export async function runConnectorStep({ step, resolvedPrompt, context, options = {} }) {
   if (step.tool === 'mock') {
     const result = await runMockStep({ step, resolvedPrompt, context });
-    return { ok: true, output: result.output, raw: result.raw };
+    return { ok: true, output: result.output, raw: { ...result.raw, partial: false, warning: null } };
   }
 
   let connector;
@@ -21,38 +35,26 @@ export async function runConnectorStep({ step, resolvedPrompt, context, options 
   }
 
   if (!isConnectorImplemented(step.tool)) {
-    return failure(`Tool "${step.tool}" is registered but not implemented yet. Use "mock" or "chatgpt" for now.`, { errorType: 'connector_not_implemented' });
-  }
-
-  if (step.tool !== 'chatgpt') {
-    return failure(`Tool "${step.tool}" is not available for real browser execution yet.`, { errorType: 'connector_not_implemented' });
+    return failure(`Tool "${step.tool}" is registered but not implemented yet.`, { errorType: 'connector_not_implemented' });
   }
 
   try {
-    await openToolTab('chatgpt');
-    const contextBrowser = getBrowserContext();
-    if (!contextBrowser) {
-      return failure('Browser is not running. Launch the browser and retry.', { recoverable: true, errorType: 'manual_intervention_required' });
-    }
-    const host = new URL(connector.startUrl).hostname;
-    const page = contextBrowser.pages().find((candidate) => candidate.url().includes(host)) ?? contextBrowser.pages().at(-1);
-    if (!page) {
-      return failure('ChatGPT tab failed to open. Open ChatGPT manually, then retry.', { recoverable: true, errorType: 'manual_intervention_required' });
+    let tab;
+    if (step.tool === 'generic') {
+      if (!step.url) return failure('Generic connector requires step.url.', { recoverable: true, errorType: 'manual_intervention_required' });
+      tab = await openUrlTab(step.url, { reuse: true, includePage: true });
+    } else {
+      tab = await openToolTab(step.tool, { reuse: true, includePage: true });
     }
 
-    const result = await connector.runPrompt(page, resolvedPrompt, options.chatgpt ?? {});
+    if (!tab.page) {
+      return failure(`${connector.label} tab failed to open. Open it manually, then retry.`, { recoverable: true, errorType: 'manual_intervention_required' });
+    }
+
+    const result = await connector.runPrompt(tab.page, resolvedPrompt, { ...(options[step.tool] ?? {}), step });
     if (!result.ok) return result;
-    return {
-      ok: true,
-      output: result.output,
-      raw: {
-        ...result.raw,
-        tool: 'chatgpt',
-        stepId: step.id,
-        createdAt: result.raw?.createdAt ?? new Date().toISOString()
-      }
-    };
+    return normalizeSuccess(result, step);
   } catch (error) {
-    return failure(`ChatGPT connector failed. ${error.message}`, { recoverable: true, errorType: 'manual_intervention_required' });
+    return failure(`${connector.label} connector failed. ${error.message}`, { recoverable: true, errorType: 'manual_intervention_required' });
   }
 }

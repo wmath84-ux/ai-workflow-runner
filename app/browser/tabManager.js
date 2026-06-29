@@ -1,32 +1,54 @@
 import { getBrowserContext, openUrl } from './browserManager.js';
 import { getConnector, getConnectorStartUrl } from '../connectors/connectorRegistry.js';
 
-async function toTabInfo(page, index, extra = {}) {
-  return {
+async function toTabInfo(page, index, extra = {}, includePage = false) {
+  const info = {
     ...extra,
     url: page.url(),
     title: await page.title().catch(() => ''),
     index
   };
+  if (includePage) info.page = page;
+  return info;
 }
 
 function getOpenPages() {
   return getBrowserContext()?.pages().filter((page) => !page.isClosed()) ?? [];
 }
 
-export async function openToolTab(toolName) {
+function hostFromUrl(url) {
+  try { return new URL(url).hostname; } catch { return url; }
+}
+
+export async function openToolTab(toolName, options = {}) {
   const connector = getConnector(toolName);
-  const existing = await findPageByUrlPart(new URL(connector.startUrl).hostname);
-  if (existing?.page) {
-    await existing.page.bringToFront();
-    return toTabInfo(existing.page, existing.index, { toolName, label: connector.label });
+  return openUrlTab(connector.startUrl, {
+    reuse: options.reuse ?? true,
+    urlPart: options.urlPart || hostFromUrl(connector.startUrl),
+    bringToFront: options.bringToFront ?? true,
+    includePage: options.includePage ?? false,
+    extra: { toolName, label: connector.label }
+  });
+}
+
+export async function openUrlTab(url, options = {}) {
+  const reuse = options.reuse ?? true;
+  const urlPart = options.urlPart || hostFromUrl(url);
+  if (reuse) {
+    const existing = await findPageByUrlPart(urlPart);
+    if (existing?.page) {
+      if (options.bringToFront ?? true) await existing.page.bringToFront();
+      return toTabInfo(existing.page, existing.index, options.extra ?? {}, options.includePage);
+    }
   }
-  return openNewTab(connector.startUrl, { toolName, label: connector.label });
+  const tab = await openUrl(url);
+  const page = getOpenPages().at(tab.index) ?? getOpenPages().at(-1);
+  if (page && options.includePage) return toTabInfo(page, tab.index, options.extra ?? {}, true);
+  return { ...(options.extra ?? {}), ...tab };
 }
 
 export async function openNewTab(url, extra = {}) {
-  const tab = await openUrl(url);
-  return { ...extra, ...tab };
+  return openUrlTab(url, { reuse: false, extra });
 }
 
 export async function findPageByUrlPart(urlPart) {

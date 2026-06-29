@@ -22,6 +22,7 @@ export default function RunPanel() {
   const [logs, setLogs] = useState([]);
   const [isRunning, setIsRunning] = useState(false);
   const [browserStatus, setBrowserStatus] = useState(null);
+  const [genericUrl, setGenericUrl] = useState('https://example.com');
 
   const parsedWorkflow = useMemo(() => {
     try { return { workflow: JSON.parse(workflowText), error: null }; }
@@ -92,7 +93,8 @@ export default function RunPanel() {
   return (
     <div className="grid twoColumn runPanelGrid">
       <Card title="Workflow Mode Info">
-        <p><strong>Mock mode:</strong> works without a browser. <strong>ChatGPT mode:</strong> requires launching the persistent browser and logging in manually.</p>
+        <p><strong>Mock:</strong> runs without a browser. <strong>ChatGPT/Gemini/Generic:</strong> require the persistent browser. ChatGPT and Gemini require manual login.</p>
+        <p>For Gemini workflows, make sure Gemini is logged in inside the persistent browser. Generic connector needs a valid URL and safe selectors for best results.</p>
       </Card>
 
       <Card title="Browser Preparation">
@@ -104,6 +106,8 @@ export default function RunPanel() {
           <button className="secondaryButton" onClick={() => openTool('gemini')}>Open Gemini</button>
           <button className="secondaryButton" onClick={() => openTool('claude')}>Open Claude</button>
           <button className="secondaryButton" onClick={() => openTool('perplexity')}>Open Perplexity</button>
+          <input className="inlineInput" value={genericUrl} onChange={(event) => setGenericUrl(event.target.value)} />
+          <button className="secondaryButton" onClick={async () => { await window.appAPI.openUrl(genericUrl); await refreshBrowserStatus(); }}>Open Generic URL</button>
         </div>
       </Card>
 
