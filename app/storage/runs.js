@@ -161,3 +161,31 @@ export function getQueueItem(id) {
 export function cancelQueueItem(id) {
   return updateQueueItem(id, { status: 'cancelled', finishedAt: new Date().toISOString() });
 }
+
+export function getRunWithSteps(runId) {
+  const run = getRunById(runId);
+  return run ? { ...run, steps: listRunSteps(runId), groups: listRunGroups(runId) } : null;
+}
+
+export function getRunDetails(runId) { return getRunWithSteps(runId); }
+
+export function deleteRun(runId) {
+  const db = getDatabase();
+  db.prepare('DELETE FROM run_steps WHERE run_id = ?').run(runId);
+  db.prepare('DELETE FROM run_groups WHERE run_id = ?').run(runId);
+  db.prepare('DELETE FROM checkpoints WHERE run_id = ?').run(runId);
+  return db.prepare('DELETE FROM runs WHERE id = ?').run(runId).changes > 0;
+}
+
+export function searchRuns(filters = {}) {
+  let rows = listRuns();
+  if (filters.status && filters.status !== 'all') rows = rows.filter((run) => run.status === filters.status);
+  if (filters.search) rows = rows.filter((run) => `${run.workflowName} ${run.id}`.toLowerCase().includes(filters.search.toLowerCase()));
+  return rows;
+}
+
+export function getRunOutputPaths(runId) {
+  const run = getRunById(runId);
+  if (!run) return null;
+  return { outputFolder: `outputs/${String(run.workflowName).toLowerCase().replace(/[^a-z0-9-_]+/g, '-')}/${runId}` };
+}

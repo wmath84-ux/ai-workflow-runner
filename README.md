@@ -140,3 +140,30 @@ Command 6 Status:
 3. Export system.
 4. Logs UI.
 5. Workflow library UI.
+
+## Command 7 Status
+
+- Workflow Library UI added for bundled samples, saved SQLite workflows, JSON import, templates, preview, duplicate, delete, and copy actions.
+- Run History and Result Viewer pages added for searching runs, inspecting step outputs, and viewing final/partial outputs.
+- Markdown, TXT, JSON, and ZIP-style export actions added under `exports/<workflow-name>/<run-id>/`.
+- Logs system added with SQLite-backed records and a dashboard Logs page.
+- Safe file opening added for approved project folders only: `outputs/`, `exports/`, `workflows/`, and `browser-profile/`.
+- Search, filter, and sort controls added for run and workflow browsing.
+
+### Command 7 Testing Flow
+
+1. Run `npm install` if dependencies are not installed.
+2. Run `npm run dev`.
+3. Open **Workflow Library** and preview or import a workflow JSON.
+4. Open **Run Panel** and run a mock workflow first, such as `workflows/sample-parallel-assets.json`.
+5. Open **Run History** and select the latest run.
+6. Open **Result Viewer** to inspect step outputs, raw JSON, and available final output text.
+7. Use the export buttons to create Markdown, TXT, JSON, or ZIP-style exports.
+8. Use Settings or Result Viewer actions to open approved output/export folders.
+9. Open **Logs** to inspect workflow, browser, connector, export, and file-opening events.
+
+### Command 7 Known Limitations
+
+- ZIP export currently creates a portable JSON bundle with a `.zip` filename unless a true ZIP archiver package is added later.
+- Workflow editing intentionally uses a plain textarea; richer editor features are planned for a later command.
+- File opening remains restricted to approved local project folders for safety.

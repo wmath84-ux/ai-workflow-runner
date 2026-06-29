@@ -16,3 +16,16 @@ export function getResultById(id) {
   const row = getDatabase().prepare('SELECT * FROM results WHERE id = ?').get(id);
   return row ? { ...row, data: JSON.parse(row.result_json) } : null;
 }
+
+export function getResultsByRunId(runId) {
+  return getDatabase().prepare('SELECT * FROM results WHERE run_id = ? ORDER BY created_at ASC').all(runId)
+    .map((row) => ({ ...row, data: JSON.parse(row.result_json) }));
+}
+
+export function getFinalOutputByRunId(runId) {
+  return getResultsByRunId(runId).find((result) => result.title?.includes('final output')) ?? null;
+}
+
+export function getStepOutputByRunIdAndStepId(runId, stepId) {
+  return getResultsByRunId(runId).find((result) => result.data?.stepId === stepId) ?? null;
+}

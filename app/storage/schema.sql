@@ -91,3 +91,14 @@ CREATE TABLE IF NOT EXISTS run_queue (
   finished_at TEXT,
   raw_json TEXT
 );
+
+CREATE TABLE IF NOT EXISTS logs (
+  id TEXT PRIMARY KEY,
+  run_id TEXT,
+  step_id TEXT,
+  level TEXT NOT NULL,
+  scope TEXT,
+  message TEXT NOT NULL,
+  raw_json TEXT,
+  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+);

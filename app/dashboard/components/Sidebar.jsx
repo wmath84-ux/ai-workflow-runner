@@ -2,11 +2,15 @@ import React from 'react';
 
 const navItems = [
   ['home', 'Home'],
+  ['library', 'Workflow Library'],
   ['workflows', 'Workflow List'],
   ['editor', 'Workflow Editor'],
   ['run', 'Run Panel'],
   ['browser', 'Browser Panel'],
+  ['history', 'Run History'],
   ['results', 'Results'],
+  ['resultViewer', 'Result Viewer'],
+  ['logs', 'Logs'],
   ['settings', 'Settings']
 ];
 

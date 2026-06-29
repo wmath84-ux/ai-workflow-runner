@@ -38,6 +38,9 @@ export async function saveStepResult({ workflowName, runId, step, resolvedPrompt
   const basePath = path.join(outputDirectory, safeName(step.id));
   const markdownPath = `${basePath}.md`;
   const jsonPath = `${basePath}.json`;
+  jsonPayload.markdownPath = markdownPath;
+  jsonPayload.jsonPath = jsonPath;
+  jsonPayload.outputFolder = outputDirectory;
   await fs.writeFile(markdownPath, markdown, 'utf8');
   await fs.writeFile(jsonPath, JSON.stringify(jsonPayload, null, 2), 'utf8');
 
@@ -59,7 +62,7 @@ export async function saveFinalOutput({ workflowName, runId, completedOutputs })
   const finalPath = path.join(outputDirectory, 'final-output.md');
   const sections = Object.entries(completedOutputs).map(([key, value]) => `## ${key}\n${escapeMarkdown(value)}`).join('\n\n');
   await fs.writeFile(finalPath, `# Final Output: ${workflowName}\n\n${sections}\n`, 'utf8');
-  saveResult({ runId, title: `${workflowName} final output`, status: 'saved', data: { workflowName, runId, completedOutputs }, filePath: finalPath });
+  saveResult({ runId, title: `${workflowName} final output`, status: 'saved', data: { workflowName, runId, completedOutputs, finalOutputPath: finalPath, outputFolder: outputDirectory }, filePath: finalPath });
   return finalPath;
 }
 

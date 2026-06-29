@@ -6,6 +6,9 @@ import { registerWorkflowIpc } from './ipc/workflow.ipc.js';
 import { registerSettingsIpc } from './ipc/settings.ipc.js';
 import { registerResultsIpc } from './ipc/results.ipc.js';
 import { registerBrowserIpc } from './ipc/browser.ipc.js';
+import { registerExportIpc } from './ipc/export.ipc.js';
+import { registerLogsIpc } from './ipc/logs.ipc.js';
+import { registerFilesIpc } from './ipc/files.ipc.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -41,6 +44,9 @@ app.whenReady().then(() => {
   registerSettingsIpc();
   registerResultsIpc();
   registerBrowserIpc();
+  registerExportIpc();
+  registerLogsIpc();
+  registerFilesIpc();
   createMainWindow();
 
   app.on('activate', () => {

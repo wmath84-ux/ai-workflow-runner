@@ -24,6 +24,9 @@ const appAPI = {
   clearCompletedQueueItems: () => unwrap(ipcRenderer.invoke('workflow:clear-completed-queue-items')),
   listWorkflows: () => unwrap(ipcRenderer.invoke('workflow:list')),
   getWorkflow: (workflowId) => unwrap(ipcRenderer.invoke('workflow:get', workflowId)),
+  importWorkflow: (workflow) => unwrap(ipcRenderer.invoke('workflow:import', workflow)),
+  duplicateWorkflow: (workflowId) => unwrap(ipcRenderer.invoke('workflow:duplicate', workflowId)),
+  deleteWorkflow: (workflowId) => unwrap(ipcRenderer.invoke('workflow:delete', workflowId)),
   listRuns: () => unwrap(ipcRenderer.invoke('runs:list')),
   getRun: (runId) => unwrap(ipcRenderer.invoke('runs:get', runId)),
   listResults: () => unwrap(ipcRenderer.invoke('results:list')),
@@ -37,7 +40,17 @@ const appAPI = {
   bringBrowserTabToFront: (urlPart) => unwrap(ipcRenderer.invoke('browser:bring-tab-front', urlPart)),
   getBrowserProfileInfo: () => unwrap(ipcRenderer.invoke('browser:profile-info')),
   clearBrowserProfile: () => unwrap(ipcRenderer.invoke('browser:clear-profile')),
-  listConnectors: () => unwrap(ipcRenderer.invoke('connectors:list'))
+  listConnectors: () => unwrap(ipcRenderer.invoke('connectors:list')),
+  exportRunAsMarkdown: (runId) => ipcRenderer.invoke('export:run-markdown', runId),
+  exportRunAsTxt: (runId) => ipcRenderer.invoke('export:run-txt', runId),
+  exportRunAsJson: (runId) => ipcRenderer.invoke('export:run-json', runId),
+  exportRunAsZip: (runId) => ipcRenderer.invoke('export:run-zip', runId),
+  openPath: (filePath) => ipcRenderer.invoke('files:open-path', filePath),
+  openFolder: (folderPath) => ipcRenderer.invoke('files:open-folder', folderPath),
+  showInFolder: (filePath) => ipcRenderer.invoke('files:show-in-folder', filePath),
+  getProjectPath: (folderName) => ipcRenderer.invoke('files:project-path', folderName),
+  listLogs: (filters) => unwrap(ipcRenderer.invoke('logs:list', filters)),
+  clearLogs: () => unwrap(ipcRenderer.invoke('logs:clear'))
 };
 
 contextBridge.exposeInMainWorld('appAPI', appAPI);

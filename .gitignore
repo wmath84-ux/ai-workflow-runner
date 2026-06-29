@@ -12,3 +12,6 @@ browser-profile/*
 outputs/*
 !outputs/.gitkeep
 .DS_Store
+
+exports/*
+!exports/.gitkeep

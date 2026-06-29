@@ -1,11 +1,6 @@
-import React from 'react';
+import React, { useMemo, useState } from 'react';
 import Card from '../components/Card.jsx';
+import WorkflowPreview, { buildWorkflowSummary } from '../components/WorkflowPreview.jsx';
 
-export default function WorkflowEditor() {
-  return (
-    <Card title="Workflow Editor">
-      <p>Command 2 adds validation and execution from the Run Panel. A full saved-workflow editor will be expanded later.</p>
-      <textarea className="editorPreview" readOnly value={'{\n  "workflowName": "New Workflow",\n  "inputs": {},\n  "steps": []\n}'} />
-    </Card>
-  );
-}
+const initial = { workflowName: 'New Workflow', inputs: {}, steps: [] };
+export default function WorkflowEditor(){ const [text,setText]=useState(JSON.stringify(initial,null,2)); const [validation,setValidation]=useState(null); const [message,setMessage]=useState(''); const parsed=useMemo(()=>{ try{return JSON.parse(text);}catch{return null;} },[text]); async function validate(){ if(!parsed){ setValidation({valid:false,errors:[{field:'json',message:'Invalid JSON'}]}); return; } setValidation(await window.appAPI.validateWorkflow(parsed)); } function format(){ if(parsed) setText(JSON.stringify(parsed,null,2)); } async function run(){ if(!parsed) return; const result=await window.appAPI.runWorkflow(parsed); setMessage(`Run ${result.runId} finished with ${result.status}`); } const summary=parsed?buildWorkflowSummary(parsed):null; return <div className="grid twoColumn"><Card title="Workflow Editor"><textarea className="workflowTextarea" value={text} onChange={e=>setText(e.target.value)}/><div className="buttonRow"><button className="secondaryButton" onClick={format}>Format JSON</button><button className="secondaryButton" onClick={validate}>Validate</button><button className="primaryAction" onClick={run}>Run Workflow</button></div>{validation?<pre>{JSON.stringify(validation,null,2)}</pre>:null}{message?<div className="emptyState">{message}</div>:null}</Card><Card title="Workflow Summary">{parsed?<WorkflowPreview workflow={parsed}/>:<p>Invalid JSON</p>}{summary?<pre>{JSON.stringify(summary,null,2)}</pre>:null}</Card></div>; }

@@ -4,7 +4,7 @@ import { ipcMain } from 'electron';
 import { validateWorkflow } from '../runner/workflowValidator.js';
 import { getRunState, resumeWorkflow, retryPausedStep, runWorkflow } from '../runner/workflowEngine.js';
 import { cancelQueuedRun, clearCompletedQueueItems, enqueueRun, getQueueStatus, processQueue } from '../runner/runQueue.js';
-import { getWorkflowById, listWorkflows } from '../storage/workflows.js';
+import { deleteWorkflow, duplicateWorkflow, getWorkflowById, importWorkflowFromJson, listWorkflows } from '../storage/workflows.js';
 import { getRunById, listRuns, listRunSteps } from '../storage/runs.js';
 
 function success(data) {
@@ -76,6 +76,20 @@ export function registerWorkflowIpc() {
         { id: 'sample-dependency-workflow', name: 'Dependency Workflow Mock Test', status: 'sample', description: 'Bundled dependency sample' }
       ]);
     } catch (error) { return failure(error); }
+  });
+
+
+
+  ipcMain.handle('workflow:import', (_event, workflow) => {
+    try { return success(importWorkflowFromJson(workflow)); } catch (error) { return failure(error); }
+  });
+
+  ipcMain.handle('workflow:duplicate', (_event, workflowId) => {
+    try { return success(duplicateWorkflow(workflowId)); } catch (error) { return failure(error); }
+  });
+
+  ipcMain.handle('workflow:delete', (_event, workflowId) => {
+    try { return success(deleteWorkflow(workflowId)); } catch (error) { return failure(error); }
   });
 
   ipcMain.handle('workflow:get', async (_event, workflowId) => {

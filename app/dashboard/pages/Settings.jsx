@@ -5,10 +5,12 @@ export default function Settings() {
   const [settings, setSettings] = useState({});
   const [profileInfo, setProfileInfo] = useState(null);
   const [message, setMessage] = useState('');
+  const [folders, setFolders] = useState({});
 
   useEffect(() => {
     window.appAPI?.getSettings?.().then(setSettings).catch((error) => setMessage(error.message));
     window.appAPI?.getBrowserProfileInfo?.().then(setProfileInfo).catch(() => {});
+    Promise.all([window.appAPI?.getProjectPath?.('outputs'), window.appAPI?.getProjectPath?.('exports')]).then(([outputs, exportsDir]) => setFolders({ outputs: outputs?.path, exports: exportsDir?.path })).catch(() => {});
   }, []);
 
   function updateField(key, value) {
@@ -46,12 +48,17 @@ export default function Settings() {
         <label>Stop parallel group on first failure<input type="checkbox" checked={Boolean(settings.stopParallelGroupOnFailure ?? true)} onChange={(event) => updateField('stopParallelGroupOnFailure', event.target.checked)} /></label>
         <label>Allow concurrent workflow runs<input type="checkbox" checked={Boolean(settings.allowConcurrentRuns)} onChange={(event) => updateField('allowConcurrentRuns', event.target.checked)} /></label>
         <label>Queue enabled<input type="checkbox" checked={Boolean(settings.queueEnabled ?? true)} onChange={(event) => updateField('queueEnabled', event.target.checked)} /></label>
+        <label>Log retention<select value={settings.logRetention ?? 'forever'} onChange={(event) => updateField('logRetention', event.target.value)}><option value="forever">Keep forever</option><option value="7">Delete logs older than 7 days</option><option value="30">Delete logs older than 30 days</option></select></label>
+        <label>Default export format<select value={settings.defaultExportFormat ?? 'markdown'} onChange={(event) => updateField('defaultExportFormat', event.target.value)}><option value="markdown">Markdown</option><option value="txt">TXT</option><option value="json">JSON</option><option value="zip">ZIP</option></select></label>
       </div>
       <div className="buttonRow">
         <button className="primaryAction" onClick={saveSettings}>Save Settings</button>
         <button className="secondaryButton" onClick={() => updateField('browserProfileDirectory', '')}>Reset to Default Profile Path</button>
         <button className="secondaryButton" onClick={refreshProfileInfo}>Open Browser Profile Info</button>
+        <button className="secondaryButton" onClick={() => window.appAPI.openFolder(folders.outputs)}>Open Output Folder</button>
+        <button className="secondaryButton" onClick={() => window.appAPI.openFolder(folders.exports)}>Open Exports Folder</button>
       </div>
+      {folders.outputs ? <div className="emptyState">Outputs: {folders.outputs}<br />Exports: {folders.exports}</div> : null}
       {message ? <div className="emptyState">{message}</div> : null}
       {profileInfo ? <pre className="jsonPreview">{JSON.stringify(profileInfo, null, 2)}</pre> : null}
     </Card>
