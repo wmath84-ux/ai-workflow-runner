@@ -14,6 +14,9 @@ const navItems = [
   ['results', 'Results'],
   ['resultViewer', 'Result Viewer'],
   ['logs', 'Logs'],
+  ['backup', 'Backup & Restore'],
+  ['status', 'App Status'],
+  ['diagnostics', 'Diagnostics'],
   ['settings', 'Settings']
 ];
 

@@ -1,0 +1,9 @@
+import { getDatabase } from '../storage/db.js';
+import { listWorkflows } from '../storage/workflows.js';
+import { validateWorkflow } from '../runner/workflowValidator.js';
+export async function findOrphanedResults(){return getDatabase().prepare('SELECT results.* FROM results LEFT JOIN runs ON results.run_id = runs.id WHERE results.run_id IS NOT NULL AND runs.id IS NULL').all();}
+export async function findMissingOutputFiles(){return [];}
+export async function findStuckRuns(){return getDatabase().prepare("SELECT * FROM runs WHERE status='running' AND datetime(updated_at) < datetime('now','-2 hours')").all();}
+export async function findInvalidWorkflows(){const invalid=[]; for(const wf of listWorkflows()){try{const row=getDatabase().prepare('SELECT definition_json FROM workflows WHERE id=?').get(wf.id); const result=validateWorkflow(JSON.parse(row.definition_json)); if(!result.valid) invalid.push({id:wf.id,name:wf.name,errors:result.errors});}catch(error){invalid.push({id:wf.id,name:wf.name,errors:[{message:error.message}]});}} return invalid;}
+export async function findBrokenCheckpoints(){return getDatabase().prepare("SELECT * FROM checkpoints WHERE checkpoint_json IS NULL OR checkpoint_json = ''").all();}
+export async function checkDataIntegrity(){const issues=[...(await findOrphanedResults()).map(r=>({type:'orphaned_result',id:r.id,message:'Result references a missing run.'})),...(await findStuckRuns()).map(r=>({type:'stuck_run',id:r.id,message:'Run has been running for more than two hours.'})),...(await findInvalidWorkflows()).map(w=>({type:'invalid_workflow',id:w.id,message:'Workflow JSON failed validation.'})),...(await findBrokenCheckpoints()).map(c=>({type:'broken_checkpoint',id:c.run_id,message:'Checkpoint JSON is empty.'}))]; return {ok:issues.length===0,issues};}

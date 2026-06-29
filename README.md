@@ -193,3 +193,34 @@ Command 6 Status:
 - Visual editing is intentionally simple and uses buttons instead of drag-and-drop.
 - Secret variables are masked in the dashboard and excluded from reusable variable context by default, but deeper export-confirmation controls are planned for a future hardening command.
 - Template and prompt editing use lightweight forms and textareas rather than a full code editor.
+
+## Command 9 Status
+
+- Hardened settings system added with nested defaults, validation, merge/sanitize helpers, import/export, reset all, and reset-section support.
+- Settings validation and defaults added for app, browser, workflow, outputs, logs, backups, and safety sections.
+- Database and full backup system added under `backups/`, with backup manifests and backup listing/deletion support.
+- Restore system added with backup validation and pre-restore backup creation before database/workflow restore operations.
+- Workflow package import/export added with `.aiworkflowpkg` JSON package bundles, package manifests, workflow JSON export, and secret-variable exclusion by default.
+- Migration manager added with an idempotent registry and migration status tracking table.
+- Startup health checks added after folder initialization, database initialization, migrations, and default prompt/template seeding.
+- Data integrity checker and basic repair tools added for stuck runs, missing folders, broken settings, queue state, and result index rebuild placeholders.
+- App Status, Backup & Restore, and Diagnostics dashboard pages added.
+- Diagnostics export added under `diagnostics/` with masked logs, health results, table counts, and app status metadata.
+- Error boundary and notification toast components added for safer UI failure handling and user feedback.
+
+### Command 9 Testing Flow
+
+1. Run `npm install` if dependencies are not installed.
+2. Run `npm run dev`.
+3. Open **Settings**, change settings, save, reset one section, export settings JSON, and reset all settings if needed.
+4. Open **Backup & Restore**, create a database backup, create a full backup, validate a backup, and test restore only after confirming you want to replace data.
+5. Open **Workflow Library**, export a workflow package, validate/import a package, and confirm imported workflows appear in the library.
+6. Open **App Status**, run quick health check, run deep health check, check data integrity, and run safe repair actions.
+7. Open **Diagnostics**, export diagnostics, and inspect the generated diagnostics bundle path.
+8. Confirm existing workflows, prompt library, templates, run history, results, exports, and logs still work.
+
+### Command 9 Known Limitations
+
+- Backup, diagnostics, and workflow package files are JSON bundle files with `.zip`/`.aiworkflowpkg`-style extensions; true compressed archive packaging can be added during production packaging polish.
+- Repair tools are intentionally conservative and do not delete outputs or user data automatically.
+- Restore supports safe database/workflow restore paths first; richer merge conflict UI can be expanded later.

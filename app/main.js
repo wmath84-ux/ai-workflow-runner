@@ -12,6 +12,12 @@ import { registerFilesIpc } from './ipc/files.ipc.js';
 import { registerPromptsIpc } from './ipc/prompts.ipc.js';
 import { registerTemplatesIpc } from './ipc/templates.ipc.js';
 import { registerVariablesIpc } from './ipc/variables.ipc.js';
+import { registerBackupIpc } from './ipc/backup.ipc.js';
+import { registerPackageIpc } from './ipc/package.ipc.js';
+import { registerHealthIpc } from './ipc/health.ipc.js';
+import { runMigrations } from './migrations/migrationManager.js';
+import { runQuickHealthCheck } from './health/healthCheckManager.js';
+import { ensureDir, projectPath } from './shared/fileUtils.js';
 import { seedDefaultPromptsIfEmpty } from './storage/prompts.js';
 import { seedDefaultTemplatesIfEmpty } from './storage/templates.js';
 
@@ -43,10 +49,13 @@ function createMainWindow() {
   return mainWindow;
 }
 
-app.whenReady().then(() => {
+app.whenReady().then(async () => {
+  for (const folder of ['outputs', 'exports', 'backups', 'diagnostics', 'workflows', 'browser-profile', 'logs']) await ensureDir(projectPath(folder));
   initializeDatabase();
+  await runMigrations();
   seedDefaultPromptsIfEmpty();
   seedDefaultTemplatesIfEmpty();
+  await runQuickHealthCheck();
   registerWorkflowIpc();
   registerSettingsIpc();
   registerResultsIpc();
@@ -57,6 +66,9 @@ app.whenReady().then(() => {
   registerPromptsIpc();
   registerTemplatesIpc();
   registerVariablesIpc();
+  registerBackupIpc();
+  registerPackageIpc();
+  registerHealthIpc();
   createMainWindow();
 
   app.on('activate', () => {

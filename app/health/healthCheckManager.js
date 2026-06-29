@@ -1,0 +1,12 @@
+import { getDatabase } from '../storage/db.js';
+import { getMigrationStatus } from '../migrations/migrationManager.js';
+import { loadSettings } from '../settings/settingsService.js';
+import { getDatabaseStats } from '../storage/maintenance.js';
+import { checkStorageFolders } from './storageHealthChecker.js';
+import { checkBrowserProfile } from './browserProfileHealthChecker.js';
+import { checkDataIntegrity } from './dataIntegrityChecker.js';
+let lastHealthCheck=null;
+export async function runHealthChecks(options={}){const checks=[]; try{getDatabase().prepare('SELECT 1').get(); checks.push({id:'database',label:'Database',status:'ok',message:'Database opened successfully.'});}catch(error){checks.push({id:'database',label:'Database',status:'error',message:error.message});} try{await loadSettings(); checks.push({id:'settings',label:'Settings',status:'ok',message:'Settings loaded with defaults.'});}catch(error){checks.push({id:'settings',label:'Settings',status:'error',message:error.message});} checks.push(...await checkStorageFolders()); checks.push(await checkBrowserProfile()); try{const migrations=await getMigrationStatus(); checks.push({id:'migrations',label:'Migrations',status:'ok',message:`${migrations.applied.length} migrations recorded.`});}catch(error){checks.push({id:'migrations',label:'Migrations',status:'warning',message:error.message});} try{await import('playwright'); checks.push({id:'playwright',label:'Playwright',status:'ok',message:'Playwright package is installed.'});}catch{checks.push({id:'playwright',label:'Playwright',status:'warning',message:'Playwright package was not detected.'});} if(options.deep){const integrity=await checkDataIntegrity(); checks.push({id:'integrity',label:'Data Integrity',status:integrity.ok?'ok':'warning',message:integrity.ok?'No integrity issues found.':`${integrity.issues.length} integrity issues found.`,issues:integrity.issues});} const errors=checks.filter(c=>c.status==='error'); const warnings=checks.filter(c=>c.status==='warning'); lastHealthCheck={ok:errors.length===0,status:errors.length?'error':warnings.length?'warning':'healthy',checkedAt:new Date().toISOString(),checks,warnings,errors,stats:await getDatabaseStats()}; return lastHealthCheck;}
+export async function runQuickHealthCheck(){return runHealthChecks({deep:false});}
+export async function runDeepHealthCheck(){return runHealthChecks({deep:true});}
+export async function getLastHealthCheck(){return lastHealthCheck;}

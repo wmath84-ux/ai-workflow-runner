@@ -15,3 +15,12 @@ outputs/*
 
 exports/*
 !exports/.gitkeep
+backups/*
+!backups/.gitkeep
+diagnostics/*
+!diagnostics/.gitkeep
+logs/*
+!logs/.gitkeep
+!backups/
+!diagnostics/
+!logs/

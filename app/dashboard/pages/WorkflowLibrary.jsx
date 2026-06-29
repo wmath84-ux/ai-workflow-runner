@@ -4,6 +4,8 @@ import SearchFilterBar from '../components/SearchFilterBar.jsx';
 import WorkflowCard from '../components/WorkflowCard.jsx';
 import WorkflowImportBox from '../components/WorkflowImportBox.jsx';
 import WorkflowPreview from '../components/WorkflowPreview.jsx';
+import PackageExportPanel from '../components/PackageExportPanel.jsx';
+import PackageImportBox from '../components/PackageImportBox.jsx';
 
 const templates = {
   empty: { workflowName: 'New Workflow', description: '', inputs: {}, steps: [] },
@@ -18,6 +20,7 @@ export default function WorkflowLibrary() {
   const [selected, setSelected] = useState(null);
   const [search, setSearch] = useState('');
   const [message, setMessage] = useState('');
+  const [packageMessage, setPackageMessage] = useState('');
 
   async function load() { setWorkflows(await window.appAPI.listWorkflows()); }
   useEffect(() => { load(); }, []);
@@ -55,5 +58,5 @@ export default function WorkflowLibrary() {
 
   const filtered = workflows.filter((workflow) => `${workflow.name} ${workflow.description}`.toLowerCase().includes(search.toLowerCase()));
 
-  return <div className="grid twoColumn"><Card title="Workflow Library"><SearchFilterBar search={search} onSearch={setSearch}/><div className="buttonRow">{Object.entries(templates).map(([key,value])=><button className="secondaryButton" key={key} onClick={()=>setSelected(value)}>{key} template</button>)}</div>{filtered.map((workflow)=><div key={workflow.id} className="card compact"><WorkflowCard workflow={workflow} onLoad={preview}/><div className="buttonRow"><button className="secondaryButton" onClick={()=>duplicate(workflow)}>Duplicate</button><button className="secondaryButton" onClick={()=>remove(workflow)}>Delete</button></div></div>)}</Card><div><WorkflowImportBox onImport={setSelected}/>{message?<div className="emptyState">{message}</div>:null}{selected?<WorkflowPreview workflow={selected}/>:null}{selected?<div className="buttonRow"><button className="primaryAction" onClick={saveSelected}>Save to Library</button><button className="secondaryButton" onClick={()=>navigator.clipboard?.writeText(JSON.stringify(selected,null,2))}>Copy JSON</button></div>:null}{selected?<pre className="jsonPreview">{JSON.stringify(selected,null,2)}</pre>:null}</div></div>;
+  return <div className="grid twoColumn"><Card title="Workflow Library"><SearchFilterBar search={search} onSearch={setSearch}/><div className="buttonRow">{Object.entries(templates).map(([key,value])=><button className="secondaryButton" key={key} onClick={()=>setSelected(value)}>{key} template</button>)}</div>{filtered.map((workflow)=><div key={workflow.id} className="card compact"><WorkflowCard workflow={workflow} onLoad={preview}/><div className="buttonRow"><button className="secondaryButton" onClick={()=>duplicate(workflow)}>Duplicate</button><button className="secondaryButton" onClick={()=>remove(workflow)}>Delete</button></div></div>)}</Card><div><WorkflowImportBox onImport={setSelected}/>{message?<div className="emptyState">{message}</div>:null}{selected?<WorkflowPreview workflow={selected}/>:null}{selected?<div className="buttonRow"><button className="primaryAction" onClick={saveSelected}>Save to Library</button><button className="secondaryButton" onClick={()=>navigator.clipboard?.writeText(JSON.stringify(selected,null,2))}>Copy JSON</button></div>:null}{selected?<pre className="jsonPreview">{JSON.stringify(selected,null,2)}</pre>:null}<PackageExportPanel workflows={workflows.filter((workflow)=>workflow.status !== 'sample')} onExport={async(id,options)=>setPackageMessage(await window.appAPI.exportWorkflowPackage(id,options))} onExportJson={async(id,options)=>setPackageMessage(await window.appAPI.exportWorkflowJsonOnly(id,options))}/><PackageImportBox onValidate={async(path)=>setPackageMessage(JSON.stringify(await window.appAPI.validateWorkflowPackage(path)))} onImport={async(path,options)=>{setPackageMessage(JSON.stringify(await window.appAPI.importWorkflowPackage(path,options))); await load();}}/>{packageMessage?<pre className="jsonPreview">{packageMessage}</pre>:null}</div></div>;
 }

@@ -14,6 +14,10 @@ import Logs from './pages/Logs.jsx';
 import PromptLibrary from './pages/PromptLibrary.jsx';
 import WorkflowTemplates from './pages/WorkflowTemplates.jsx';
 import VariableManager from './pages/VariableManager.jsx';
+import BackupRestore from './pages/BackupRestore.jsx';
+import AppStatus from './pages/AppStatus.jsx';
+import Diagnostics from './pages/Diagnostics.jsx';
+import ErrorBoundary from './components/ErrorBoundary.jsx';
 import BrowserPanel from './pages/BrowserPanel.jsx';
 import './styles/main.css';
 
@@ -31,7 +35,10 @@ const pages = {
   logs: Logs,
   prompts: PromptLibrary,
   templates: WorkflowTemplates,
-  variables: VariableManager
+  variables: VariableManager,
+  backup: BackupRestore,
+  status: AppStatus,
+  diagnostics: Diagnostics
 };
 
 function App() {
@@ -55,7 +62,7 @@ function App() {
           </div>
           <span className="versionBadge">v{appInfo.version}</span>
         </header>
-        <ActivePage />
+        <ErrorBoundary><ActivePage /></ErrorBoundary>
       </main>
     </div>
   );

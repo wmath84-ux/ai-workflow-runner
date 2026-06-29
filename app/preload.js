@@ -12,7 +12,7 @@ const unwrap = async (promise) => {
 const appAPI = {
   getAppInfo: () => ipcRenderer.invoke('settings:get-app-info'),
   getSettings: () => ipcRenderer.invoke('settings:get'),
-  saveSettings: (settings) => ipcRenderer.invoke('settings:save', settings),
+  saveSettings: (settings) => unwrap(ipcRenderer.invoke('settings:save', settings)),
   validateWorkflow: (workflow) => unwrap(ipcRenderer.invoke('workflow:validate', workflow)),
   runWorkflow: (workflow) => unwrap(ipcRenderer.invoke('workflow:run', workflow)),
   retryPausedStep: (runId) => unwrap(ipcRenderer.invoke('workflow:retry-paused-step', runId)),
@@ -75,7 +75,31 @@ const appAPI = {
   listInputPresets: (filters) => unwrap(ipcRenderer.invoke('input-presets:list', filters)),
   createInputPreset: (preset) => unwrap(ipcRenderer.invoke('input-presets:create', preset)),
   updateInputPreset: (id, updates) => unwrap(ipcRenderer.invoke('input-presets:update', id, updates)),
-  deleteInputPreset: (id) => unwrap(ipcRenderer.invoke('input-presets:delete', id))
+  deleteInputPreset: (id) => unwrap(ipcRenderer.invoke('input-presets:delete', id)),
+
+  loadSettings: () => unwrap(ipcRenderer.invoke('settings:load')),
+  resetSettings: () => unwrap(ipcRenderer.invoke('settings:reset')),
+  resetSettingsSection: (sectionName) => unwrap(ipcRenderer.invoke('settings:reset-section', sectionName)),
+  exportSettings: () => unwrap(ipcRenderer.invoke('settings:export')),
+  importSettings: (settingsJson) => unwrap(ipcRenderer.invoke('settings:import', settingsJson)),
+  createDatabaseBackup: () => unwrap(ipcRenderer.invoke('backup:create-database')),
+  createFullBackup: (options) => unwrap(ipcRenderer.invoke('backup:create-full', options)),
+  listBackups: (filters) => unwrap(ipcRenderer.invoke('backup:list', filters)),
+  validateBackup: (backupPath) => unwrap(ipcRenderer.invoke('backup:validate', backupPath)),
+  restoreBackup: (backupPath, options) => unwrap(ipcRenderer.invoke('backup:restore', backupPath, options)),
+  deleteBackup: (backupPath) => unwrap(ipcRenderer.invoke('backup:delete', backupPath)),
+  exportWorkflowPackage: (workflowId, options) => unwrap(ipcRenderer.invoke('package:export-workflow', workflowId, options)),
+  exportWorkflowJsonOnly: (workflowId, options) => unwrap(ipcRenderer.invoke('package:export-workflow-json', workflowId, options)),
+  validateWorkflowPackage: (packagePath) => unwrap(ipcRenderer.invoke('package:validate-import', packagePath)),
+  importWorkflowPackage: (packagePath, options) => unwrap(ipcRenderer.invoke('package:import-workflow', packagePath, options)),
+  runQuickHealthCheck: () => unwrap(ipcRenderer.invoke('health:quick-check')),
+  runDeepHealthCheck: () => unwrap(ipcRenderer.invoke('health:deep-check')),
+  checkDataIntegrity: () => unwrap(ipcRenderer.invoke('health:integrity-check')),
+  repairHealthIssues: (options) => unwrap(ipcRenderer.invoke('health:repair', options)),
+  exportDiagnostics: (options) => unwrap(ipcRenderer.invoke('diagnostics:export', options)),
+  getDatabaseStats: () => unwrap(ipcRenderer.invoke('maintenance:db-stats')),
+  vacuumDatabase: () => unwrap(ipcRenderer.invoke('maintenance:vacuum')),
+  clearOldLogs: (days) => unwrap(ipcRenderer.invoke('maintenance:clear-old-logs', days))
 };
 
 contextBridge.exposeInMainWorld('appAPI', appAPI);

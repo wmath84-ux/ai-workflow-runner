@@ -1,0 +1,2 @@
+import React from 'react';
+export default function BackupCard({ backup, onRestore, onDelete }) { return <article className="card compact"><h3>{backup.backupId}</h3><p>{backup.type} · {backup.createdAt}</p><p>Size: {backup.size ?? 0} bytes</p><div className="buttonRow"><button className="secondaryButton" onClick={()=>onRestore(backup)}>Restore</button><button className="secondaryButton" onClick={()=>onDelete(backup)}>Delete</button></div></article>; }
