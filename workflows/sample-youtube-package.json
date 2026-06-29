@@ -1,0 +1,25 @@
+{
+  "name": "Sample YouTube Package Workflow",
+  "description": "Foundation-only sample showing sequential AI content steps for a YouTube package.",
+  "inputs": {
+    "topic": "How small teams can use AI workflow automation",
+    "audience": "startup operators"
+  },
+  "steps": [
+    {
+      "id": "outline",
+      "connector": "generic",
+      "prompt": "Create a concise video outline for {{topic}} aimed at {{audience}}."
+    },
+    {
+      "id": "title-options",
+      "connector": "generic",
+      "prompt": "Using the outline, suggest five compelling YouTube titles."
+    },
+    {
+      "id": "description",
+      "connector": "generic",
+      "prompt": "Draft a YouTube description and chapter list for the selected outline."
+    }
+  ]
+}
