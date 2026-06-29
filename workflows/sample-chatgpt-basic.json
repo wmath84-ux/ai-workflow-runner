@@ -1,0 +1,23 @@
+{
+  "workflowName": "ChatGPT Basic Test",
+  "description": "Runs one real ChatGPT prompt through the browser connector.",
+  "inputs": {
+    "topic": "Newton's Laws of Motion"
+  },
+  "steps": [
+    {
+      "id": "explain_topic",
+      "tool": "chatgpt",
+      "mode": "single",
+      "prompt": "Explain this topic in simple student-friendly language: {{topic}}",
+      "saveAs": "explanation"
+    },
+    {
+      "id": "make_quiz",
+      "tool": "chatgpt",
+      "mode": "single",
+      "prompt": "Create 5 quiz questions from this explanation:\n\n{{explanation}}",
+      "saveAs": "quiz"
+    }
+  ]
+}

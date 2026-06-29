@@ -1,0 +1,14 @@
+node_modules/
+dist/
+.vite/
+*.log
+logs/
+*.sqlite
+*.sqlite3
+*.db
+app-data/
+browser-profile/*
+!browser-profile/.gitkeep
+outputs/*
+!outputs/.gitkeep
+.DS_Store
