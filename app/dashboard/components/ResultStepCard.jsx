@@ -1,0 +1,3 @@
+import React from 'react';
+import StatusBadge from './StatusBadge.jsx';
+export default function ResultStepCard({ step }) { const output=step.output?.output ?? step.output?.data?.output ?? ''; return <article className="card"><h3>{step.stepKey}</h3><p><StatusBadge status={step.status}/> {step.parentGroupId ? `Group: ${step.parentGroupId}` : ''}</p><details><summary>Prompt</summary><pre>{step.input?.resolvedPrompt ?? step.input?.step?.prompt ?? ''}</pre></details><details open><summary>Output</summary><pre>{output}</pre></details>{step.warning ? <p className="dangerText">Warning: {step.warning.message}</p> : null}</article>; }

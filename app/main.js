@@ -6,6 +6,20 @@ import { registerWorkflowIpc } from './ipc/workflow.ipc.js';
 import { registerSettingsIpc } from './ipc/settings.ipc.js';
 import { registerResultsIpc } from './ipc/results.ipc.js';
 import { registerBrowserIpc } from './ipc/browser.ipc.js';
+import { registerExportIpc } from './ipc/export.ipc.js';
+import { registerLogsIpc } from './ipc/logs.ipc.js';
+import { registerFilesIpc } from './ipc/files.ipc.js';
+import { registerPromptsIpc } from './ipc/prompts.ipc.js';
+import { registerTemplatesIpc } from './ipc/templates.ipc.js';
+import { registerVariablesIpc } from './ipc/variables.ipc.js';
+import { registerBackupIpc } from './ipc/backup.ipc.js';
+import { registerPackageIpc } from './ipc/package.ipc.js';
+import { registerHealthIpc } from './ipc/health.ipc.js';
+import { runMigrations } from './migrations/migrationManager.js';
+import { runQuickHealthCheck } from './health/healthCheckManager.js';
+import { ensureDir, projectPath } from './shared/fileUtils.js';
+import { seedDefaultPromptsIfEmpty } from './storage/prompts.js';
+import { seedDefaultTemplatesIfEmpty } from './storage/templates.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -35,12 +49,26 @@ function createMainWindow() {
   return mainWindow;
 }
 
-app.whenReady().then(() => {
+app.whenReady().then(async () => {
+  for (const folder of ['outputs', 'exports', 'backups', 'diagnostics', 'workflows', 'browser-profile', 'logs']) await ensureDir(projectPath(folder));
   initializeDatabase();
+  await runMigrations();
+  seedDefaultPromptsIfEmpty();
+  seedDefaultTemplatesIfEmpty();
+  await runQuickHealthCheck();
   registerWorkflowIpc();
   registerSettingsIpc();
   registerResultsIpc();
   registerBrowserIpc();
+  registerExportIpc();
+  registerLogsIpc();
+  registerFilesIpc();
+  registerPromptsIpc();
+  registerTemplatesIpc();
+  registerVariablesIpc();
+  registerBackupIpc();
+  registerPackageIpc();
+  registerHealthIpc();
   createMainWindow();
 
   app.on('activate', () => {

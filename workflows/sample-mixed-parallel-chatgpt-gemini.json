@@ -1,0 +1,20 @@
+{
+  "workflowName": "Mixed Parallel ChatGPT Gemini",
+  "description": "Uses ChatGPT and Gemini in a parallel group.",
+  "inputs": { "topic": "Photosynthesis" },
+  "settings": { "maxConcurrency": 2, "stopOnParallelStepFailure": true },
+  "steps": [
+    { "id": "base_explanation", "tool": "chatgpt", "mode": "single", "prompt": "Explain this topic simply for class 8 students:\n\n{{topic}}", "saveAs": "base_explanation" },
+    {
+      "id": "parallel_learning_assets",
+      "mode": "parallel",
+      "label": "Learning Assets",
+      "maxConcurrency": 2,
+      "steps": [
+        { "id": "quiz_by_gemini", "tool": "gemini", "mode": "single", "prompt": "Create 10 quiz questions from this explanation:\n\n{{base_explanation}}", "saveAs": "quiz_output" },
+        { "id": "notes_by_chatgpt", "tool": "chatgpt", "mode": "single", "prompt": "Create short revision notes from this explanation:\n\n{{base_explanation}}", "saveAs": "notes_output" }
+      ]
+    },
+    { "id": "final_study_pack", "tool": "chatgpt", "mode": "single", "prompt": "Create a final study pack using:\n\nExplanation:\n{{base_explanation}}\n\nQuiz:\n{{quiz_output}}\n\nNotes:\n{{notes_output}}", "saveAs": "final_study_pack" }
+  ]
+}

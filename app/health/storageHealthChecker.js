@@ -1,0 +1,2 @@
+import { ensureDir, projectPath } from '../shared/fileUtils.js';
+export async function checkStorageFolders(){const checks=[]; for(const folder of ['outputs','exports','backups','diagnostics','workflows','browser-profile','logs']){try{await ensureDir(projectPath(folder)); checks.push({id:`folder_${folder}`,label:`${folder} folder`,status:'ok',message:'Folder exists or was created.'});}catch(error){checks.push({id:`folder_${folder}`,label:`${folder} folder`,status:'error',message:error.message});}} return checks;}

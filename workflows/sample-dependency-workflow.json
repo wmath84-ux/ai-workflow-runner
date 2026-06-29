@@ -1,0 +1,10 @@
+{
+  "workflowName": "Dependency Workflow Mock Test",
+  "description": "Tests dependsOn validation and output usage.",
+  "inputs": { "topic": "Electricity" },
+  "steps": [
+    { "id": "explanation", "tool": "mock", "mode": "single", "prompt": "Explain: {{topic}}", "saveAs": "explanation_output" },
+    { "id": "examples", "tool": "mock", "mode": "single", "dependsOn": ["explanation"], "prompt": "Create examples from:\n\n{{explanation_output}}", "saveAs": "examples_output" },
+    { "id": "final", "tool": "mock", "mode": "single", "dependsOn": ["examples"], "prompt": "Combine explanation and examples:\n\n{{explanation_output}}\n\n{{examples_output}}", "saveAs": "final_output" }
+  ]
+}

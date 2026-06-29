@@ -1,0 +1,2 @@
+import crypto from 'node:crypto';
+export function createPackageManifest({ workflowName, included = {}, requirements = {} }) { return { packageId: `pkg_${crypto.randomUUID?.() ?? Date.now()}`, type: 'workflow-package', appName: 'ai-workflow-runner', createdAt: new Date().toISOString(), workflowName, version: 1, included: { workflow: true, prompts: true, variables: true, inputPresets: true, templates: false, ...included }, requirements }; }

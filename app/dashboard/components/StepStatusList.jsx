@@ -5,8 +5,8 @@ export default function StepStatusList({ steps = [] }) {
   return (
     <ol className="stepStatusList">
       {steps.map((step) => (
-        <li key={step.id ?? step.stepKey} className={`stepStatus ${step.status}`}>
-          <span>{step.stepKey ?? step.id}</span>
+        <li key={step.id ?? step.stepKey} className={`stepStatus ${step.status} ${step.parentGroupId ? 'childStep' : ''}`}>
+          <span>{step.parentGroupId ? `${step.parentGroupId} / ` : ''}{step.stepKey ?? step.id}</span>
           <strong>{step.status}</strong>
         </li>
       ))}

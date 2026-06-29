@@ -4,7 +4,7 @@ AI Workflow Runner is a desktop app foundation for running structured AI workflo
 
 ## Current status
 
-Command 5 adds the Gemini connector, a conservative Generic Website connector fallback, shared stable-response waiting, and mixed ChatGPT + Gemini workflows. Login remains manual and no CAPTCHA, rate-limit, stealth, or bypass automation is implemented.
+Command 6 adds parallel workflow groups, dependency validation, a run queue, concurrency limits, group metadata saving, and stronger checkpoint resume for paused grouped runs. Login remains manual and no CAPTCHA, rate-limit, stealth, or bypass automation is implemented.
 
 ## Commands
 
@@ -96,6 +96,28 @@ Command 5 Status:
 - Claude and Perplexity are still placeholders.
 - Parallel workflow execution is still not implemented.
 
+
+## Parallel groups, dependencies, and queue tests
+
+1. Run the app with `npm run dev`.
+2. Open the Run Panel.
+3. Test `workflows/sample-parallel-assets.json` first because it uses only the mock connector.
+4. Test `workflows/sample-dependency-workflow.json` to verify `dependsOn` validation and output usage.
+5. Test `workflows/sample-mixed-parallel-chatgpt-gemini.json` after confirming both ChatGPT and Gemini are logged in manually.
+6. Add multiple workflows to the queue from the Run Panel and refresh the queue panel.
+7. To test pause/retry inside a parallel group, log out of Gemini or close the Gemini tab before running the mixed parallel sample, then retry after manual login.
+8. Check `outputs/<workflow>/<run-id>/groups/<group-id>.json`, step files, final output, and the Results page.
+
+Command 6 Status:
+
+- Parallel workflow groups added.
+- Dependency validation added.
+- Run queue added.
+- Stronger checkpoint resume added.
+- Parallel groups support max concurrency.
+- Paused workflow retry works inside parallel groups.
+- Claude and Perplexity are still placeholders.
+
 ## Folder structure
 
 - `app/main.js` — Electron main process and lifecycle handling.
@@ -113,8 +135,92 @@ Command 5 Status:
 
 ## Next planned parts
 
-1. Parallel steps.
-2. Branch/group execution.
-3. Better run queue.
-4. Connector-safe error handling improvements.
-5. Full checkpoint resume execution.
+1. Run history viewer.
+2. Result viewer.
+3. Export system.
+4. Logs UI.
+5. Workflow library UI.
+
+## Command 7 Status
+
+- Workflow Library UI added for bundled samples, saved SQLite workflows, JSON import, templates, preview, duplicate, delete, and copy actions.
+- Run History and Result Viewer pages added for searching runs, inspecting step outputs, and viewing final/partial outputs.
+- Markdown, TXT, JSON, and ZIP-style export actions added under `exports/<workflow-name>/<run-id>/`.
+- Logs system added with SQLite-backed records and a dashboard Logs page.
+- Safe file opening added for approved project folders only: `outputs/`, `exports/`, `workflows/`, and `browser-profile/`.
+- Search, filter, and sort controls added for run and workflow browsing.
+
+### Command 7 Testing Flow
+
+1. Run `npm install` if dependencies are not installed.
+2. Run `npm run dev`.
+3. Open **Workflow Library** and preview or import a workflow JSON.
+4. Open **Run Panel** and run a mock workflow first, such as `workflows/sample-parallel-assets.json`.
+5. Open **Run History** and select the latest run.
+6. Open **Result Viewer** to inspect step outputs, raw JSON, and available final output text.
+7. Use the export buttons to create Markdown, TXT, JSON, or ZIP-style exports.
+8. Use Settings or Result Viewer actions to open approved output/export folders.
+9. Open **Logs** to inspect workflow, browser, connector, export, and file-opening events.
+
+### Command 7 Known Limitations
+
+- ZIP export currently creates a portable JSON bundle with a `.zip` filename unless a true ZIP archiver package is added later.
+- Workflow editing intentionally uses a plain textarea; richer editor features are planned for a later command.
+- File opening remains restricted to approved local project folders for safety.
+
+## Command 8 Status
+
+- Workflow templates added with a template gallery, built-in template seeding, template duplication, favorites, and template-to-workflow creation.
+- Prompt library added with default prompt seeding, search, favorites, duplicate/delete, prompt variable detection, and prompt copy/insert support.
+- Input form builder and dynamic run form added so workflows/templates can be run from form fields instead of only raw JSON.
+- Reusable variables system added with scoped variables, safe secret masking in UI, token copying, and variable preview support.
+- Variable picker and prompt preview panels added for workflow/prompt editing.
+- Workflow editor now supports JSON mode and visual step mode with simple add/edit/reorder/delete step controls and parallel-group insertion.
+
+### Command 8 Testing Flow
+
+1. Run `npm install` if dependencies are not installed.
+2. Run `npm run dev`.
+3. Open **Prompt Library**, seed default prompts, and create a prompt with variables such as `{{topic}}` and `{{audience}}`.
+4. Open **Workflow Templates**, seed default templates, choose a template, fill the dynamic input form, and create a workflow.
+5. Open **Variables**, create a reusable variable, and copy its `{{variable_name}}` token.
+6. Open **Workflow Editor**, switch between JSON and visual step mode, insert prompts/variables, validate, and run.
+7. Open **Run Panel**, select a saved workflow or template, fill the dynamic form, optionally save a preset, and run or queue the workflow.
+8. Check Run History, Results, Exports, and Logs to confirm existing features still work.
+
+### Command 8 Known Limitations
+
+- Visual editing is intentionally simple and uses buttons instead of drag-and-drop.
+- Secret variables are masked in the dashboard and excluded from reusable variable context by default, but deeper export-confirmation controls are planned for a future hardening command.
+- Template and prompt editing use lightweight forms and textareas rather than a full code editor.
+
+## Command 9 Status
+
+- Hardened settings system added with nested defaults, validation, merge/sanitize helpers, import/export, reset all, and reset-section support.
+- Settings validation and defaults added for app, browser, workflow, outputs, logs, backups, and safety sections.
+- Database and full backup system added under `backups/`, with backup manifests and backup listing/deletion support.
+- Restore system added with backup validation and pre-restore backup creation before database/workflow restore operations.
+- Workflow package import/export added with `.aiworkflowpkg` JSON package bundles, package manifests, workflow JSON export, and secret-variable exclusion by default.
+- Migration manager added with an idempotent registry and migration status tracking table.
+- Startup health checks added after folder initialization, database initialization, migrations, and default prompt/template seeding.
+- Data integrity checker and basic repair tools added for stuck runs, missing folders, broken settings, queue state, and result index rebuild placeholders.
+- App Status, Backup & Restore, and Diagnostics dashboard pages added.
+- Diagnostics export added under `diagnostics/` with masked logs, health results, table counts, and app status metadata.
+- Error boundary and notification toast components added for safer UI failure handling and user feedback.
+
+### Command 9 Testing Flow
+
+1. Run `npm install` if dependencies are not installed.
+2. Run `npm run dev`.
+3. Open **Settings**, change settings, save, reset one section, export settings JSON, and reset all settings if needed.
+4. Open **Backup & Restore**, create a database backup, create a full backup, validate a backup, and test restore only after confirming you want to replace data.
+5. Open **Workflow Library**, export a workflow package, validate/import a package, and confirm imported workflows appear in the library.
+6. Open **App Status**, run quick health check, run deep health check, check data integrity, and run safe repair actions.
+7. Open **Diagnostics**, export diagnostics, and inspect the generated diagnostics bundle path.
+8. Confirm existing workflows, prompt library, templates, run history, results, exports, and logs still work.
+
+### Command 9 Known Limitations
+
+- Backup, diagnostics, and workflow package files are JSON bundle files with `.zip`/`.aiworkflowpkg`-style extensions; true compressed archive packaging can be added during production packaging polish.
+- Repair tools are intentionally conservative and do not delete outputs or user data automatically.
+- Restore supports safe database/workflow restore paths first; richer merge conflict UI can be expanded later.

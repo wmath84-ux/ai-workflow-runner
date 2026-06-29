@@ -1,8 +1,19 @@
+<<<<<<< HEAD
+import React, { useEffect, useMemo, useState } from 'react';
+=======
 import React, { useMemo, useState } from 'react';
+>>>>>>> origin/main
 import Card from '../components/Card.jsx';
 import RunLog from '../components/RunLog.jsx';
 import StepStatusList from '../components/StepStatusList.jsx';
 import ManualInterventionBox from '../components/ManualInterventionBox.jsx';
+<<<<<<< HEAD
+import RunQueuePanel from '../components/RunQueuePanel.jsx';
+import ParallelGroupCard from '../components/ParallelGroupCard.jsx';
+import DynamicRunForm from '../components/DynamicRunForm.jsx';
+import VariablePreviewPanel from '../components/VariablePreviewPanel.jsx';
+=======
+>>>>>>> origin/main
 
 const sampleWorkflow = {
   workflowName: 'YouTube Video Full Package',
@@ -23,6 +34,20 @@ export default function RunPanel() {
   const [isRunning, setIsRunning] = useState(false);
   const [browserStatus, setBrowserStatus] = useState(null);
   const [genericUrl, setGenericUrl] = useState('https://example.com');
+<<<<<<< HEAD
+  const [queueStatus, setQueueStatus] = useState(null);
+  const [savedWorkflows, setSavedWorkflows] = useState([]);
+  const [templates, setTemplates] = useState([]);
+  const [selectedWorkflowId, setSelectedWorkflowId] = useState('');
+  const [selectedTemplateId, setSelectedTemplateId] = useState('');
+  const [dynamicWorkflow, setDynamicWorkflow] = useState(null);
+
+  useEffect(() => {
+    window.appAPI.listWorkflows?.().then(setSavedWorkflows).catch(() => {});
+    window.appAPI.listTemplates?.().then(setTemplates).catch(() => {});
+  }, []);
+=======
+>>>>>>> origin/main
 
   const parsedWorkflow = useMemo(() => {
     try { return { workflow: JSON.parse(workflowText), error: null }; }
@@ -74,6 +99,57 @@ export default function RunPanel() {
     }
   }
 
+<<<<<<< HEAD
+  async function refreshQueue() {
+    try { setQueueStatus(await window.appAPI.getRunQueueStatus()); } catch (error) { setLogs((current) => [...current, error.message]); }
+  }
+
+  async function enqueueCurrentWorkflow() {
+    const validationResult = await validateCurrentWorkflow();
+    if (!validationResult?.valid) return;
+    try {
+      await window.appAPI.enqueueWorkflowRun(parsedWorkflow.workflow);
+      await refreshQueue();
+      setLogs((current) => [...current, 'Workflow added to queue.']);
+    } catch (error) { setLogs((current) => [...current, error.message]); }
+  }
+
+  async function resumeCurrentWorkflow() {
+    if (!runResult?.runId) return;
+    setIsRunning(true);
+    try { setRunResult(await window.appAPI.resumeWorkflow(runResult.runId)); }
+    catch (error) { setLogs((current) => [...current, `Resume failed: ${error.message}`]); }
+    finally { setIsRunning(false); }
+  }
+
+  async function loadSavedWorkflow(id) {
+    if (!id) return;
+    const workflow = await window.appAPI.getWorkflow(id);
+    const definition = workflow?.definition ?? workflow;
+    setWorkflowText(JSON.stringify(definition, null, 2));
+    setDynamicWorkflow(definition);
+  }
+
+  async function loadTemplate(id) {
+    if (!id) return;
+    const template = templates.find((item) => item.id === id);
+    if (!template) return;
+    setDynamicWorkflow({ ...template.templateJson, inputSchema: template.inputSchema, templateId: template.id });
+  }
+
+  async function runWorkflowObject(workflow) {
+    setWorkflowText(JSON.stringify(workflow, null, 2));
+    setIsRunning(true);
+    try {
+      const result = await window.appAPI.runWorkflow(workflow);
+      setRunResult(result);
+      setLogs((current) => [...current, `Run ${result.runId} finished with status ${result.status}.`]);
+    } catch (error) { setLogs((current) => [...current, `Run failed: ${error.message}`]); }
+    finally { setIsRunning(false); }
+  }
+
+=======
+>>>>>>> origin/main
   async function runCurrentWorkflow() {
     const validationResult = await validateCurrentWorkflow();
     if (!validationResult?.valid) return;
@@ -111,13 +187,40 @@ export default function RunPanel() {
         </div>
       </Card>
 
+<<<<<<< HEAD
+      <Card title="Run From Library or Template">
+        <p>Select a saved workflow or template, fill inputs dynamically, then run or queue.</p>
+        <div className="buttonRow">
+          <select value={selectedWorkflowId} onChange={async (event) => { setSelectedWorkflowId(event.target.value); await loadSavedWorkflow(event.target.value); }}>
+            <option value="">Saved workflow...</option>
+            {savedWorkflows.map((workflow) => <option key={workflow.id} value={workflow.id}>{workflow.name}</option>)}
+          </select>
+          <select value={selectedTemplateId} onChange={async (event) => { setSelectedTemplateId(event.target.value); await loadTemplate(event.target.value); }}>
+            <option value="">Template...</option>
+            {templates.map((template) => <option key={template.id} value={template.id}>{template.name}</option>)}
+          </select>
+        </div>
+        {dynamicWorkflow ? <DynamicRunForm workflow={dynamicWorkflow} onRun={runWorkflowObject} onPreview={(workflow) => setWorkflowText(JSON.stringify(workflow, null, 2))} /> : <div className="emptyState">Choose a workflow/template to show the dynamic input form.</div>}
+        {parsedWorkflow.workflow ? <VariablePreviewPanel text={JSON.stringify(parsedWorkflow.workflow.inputs ?? {}, null, 2)} context={parsedWorkflow.workflow.inputs ?? {}} /> : null}
+      </Card>
+
+      <Card title="Run Workflow JSON">
+=======
       <Card title="Run Workflow">
+>>>>>>> origin/main
         <p>Paste a workflow JSON document, validate it, then execute it with the safe mock runner.</p>
         <textarea className="workflowTextarea" value={workflowText} onChange={(event) => setWorkflowText(event.target.value)} />
         <div className="buttonRow">
           <button className="secondaryButton" onClick={validateCurrentWorkflow} disabled={isRunning}>Validate Workflow</button>
+<<<<<<< HEAD
+          <button className="primaryAction" onClick={runCurrentWorkflow} disabled={isRunning}>{isRunning ? 'Running…' : 'Run Now'}</button>
+          <button className="secondaryButton" onClick={enqueueCurrentWorkflow} disabled={isRunning}>Add To Queue</button>
+          <button className="secondaryButton" onClick={retryPausedStep} disabled={isRunning || runResult?.status !== 'paused'}>Retry Paused Step</button>
+          <button className="secondaryButton" onClick={resumeCurrentWorkflow} disabled={isRunning || !runResult?.runId}>Resume Workflow</button>
+=======
           <button className="primaryAction" onClick={runCurrentWorkflow} disabled={isRunning}>{isRunning ? 'Running…' : 'Run Workflow'}</button>
           <button className="secondaryButton" onClick={retryPausedStep} disabled={isRunning || runResult?.status !== 'paused'}>Retry Paused Step</button>
+>>>>>>> origin/main
         </div>
       </Card>
 
@@ -139,8 +242,16 @@ export default function RunPanel() {
         {runResult?.status === 'paused' ? <ManualInterventionBox message={runResult.message} onOpenChatGPT={() => openTool('chatgpt')} onRetry={retryPausedStep} /> : null}
         <RunLog messages={logs} />
         <StepStatusList steps={runResult?.steps ?? []} />
+<<<<<<< HEAD
+        {(runResult?.groups ?? []).map((group) => <ParallelGroupCard key={group.id} group={group} steps={runResult?.steps ?? []} />)}
       </Card>
 
+      <RunQueuePanel queueStatus={queueStatus} onRefresh={refreshQueue} onCancel={async (id) => { await window.appAPI.cancelQueuedRun(id); await refreshQueue(); }} onClearCompleted={async () => { await window.appAPI.clearCompletedQueueItems(); await refreshQueue(); }} />
+
+=======
+      </Card>
+
+>>>>>>> origin/main
       {runResult ? (
         <Card title="Completed Outputs">
           <p><strong>Run ID:</strong> {runResult.runId}</p>

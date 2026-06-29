@@ -1,0 +1,20 @@
+{
+  "workflowName": "Parallel Assets Mock Test",
+  "description": "Tests parallel execution using mock connector.",
+  "inputs": { "topic": "Gravity" },
+  "settings": { "maxConcurrency": 2, "stopOnParallelStepFailure": true },
+  "steps": [
+    { "id": "research", "tool": "mock", "mode": "single", "prompt": "Research this topic: {{topic}}", "saveAs": "research_output" },
+    {
+      "id": "parallel_assets",
+      "mode": "parallel",
+      "label": "Parallel Content Assets",
+      "maxConcurrency": 2,
+      "steps": [
+        { "id": "titles", "tool": "mock", "mode": "single", "prompt": "Create titles from this research:\n\n{{research_output}}", "saveAs": "titles_output" },
+        { "id": "summary", "tool": "mock", "mode": "single", "prompt": "Create summary from this research:\n\n{{research_output}}", "saveAs": "summary_output" }
+      ]
+    },
+    { "id": "final", "tool": "mock", "mode": "single", "prompt": "Combine:\n\nTitles:\n{{titles_output}}\n\nSummary:\n{{summary_output}}", "saveAs": "final_output" }
+  ]
+}

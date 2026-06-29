@@ -7,6 +7,17 @@ import WorkflowEditor from './pages/WorkflowEditor.jsx';
 import RunPanel from './pages/RunPanel.jsx';
 import Results from './pages/Results.jsx';
 import Settings from './pages/Settings.jsx';
+import RunHistory from './pages/RunHistory.jsx';
+import ResultViewer from './pages/ResultViewer.jsx';
+import WorkflowLibrary from './pages/WorkflowLibrary.jsx';
+import Logs from './pages/Logs.jsx';
+import PromptLibrary from './pages/PromptLibrary.jsx';
+import WorkflowTemplates from './pages/WorkflowTemplates.jsx';
+import VariableManager from './pages/VariableManager.jsx';
+import BackupRestore from './pages/BackupRestore.jsx';
+import AppStatus from './pages/AppStatus.jsx';
+import Diagnostics from './pages/Diagnostics.jsx';
+import ErrorBoundary from './components/ErrorBoundary.jsx';
 import BrowserPanel from './pages/BrowserPanel.jsx';
 import './styles/main.css';
 
@@ -17,7 +28,17 @@ const pages = {
   run: RunPanel,
   results: Results,
   settings: Settings,
-  browser: BrowserPanel
+  browser: BrowserPanel,
+  history: RunHistory,
+  resultViewer: ResultViewer,
+  library: WorkflowLibrary,
+  logs: Logs,
+  prompts: PromptLibrary,
+  templates: WorkflowTemplates,
+  variables: VariableManager,
+  backup: BackupRestore,
+  status: AppStatus,
+  diagnostics: Diagnostics
 };
 
 function App() {
@@ -41,7 +62,7 @@ function App() {
           </div>
           <span className="versionBadge">v{appInfo.version}</span>
         </header>
-        <ActivePage />
+        <ErrorBoundary><ActivePage /></ErrorBoundary>
       </main>
     </div>
   );

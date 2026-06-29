@@ -12,3 +12,15 @@ browser-profile/*
 outputs/*
 !outputs/.gitkeep
 .DS_Store
+
+exports/*
+!exports/.gitkeep
+backups/*
+!backups/.gitkeep
+diagnostics/*
+!diagnostics/.gitkeep
+logs/*
+!logs/.gitkeep
+!backups/
+!diagnostics/
+!logs/
