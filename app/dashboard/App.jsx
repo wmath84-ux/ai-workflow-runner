@@ -11,6 +11,9 @@ import RunHistory from './pages/RunHistory.jsx';
 import ResultViewer from './pages/ResultViewer.jsx';
 import WorkflowLibrary from './pages/WorkflowLibrary.jsx';
 import Logs from './pages/Logs.jsx';
+import PromptLibrary from './pages/PromptLibrary.jsx';
+import WorkflowTemplates from './pages/WorkflowTemplates.jsx';
+import VariableManager from './pages/VariableManager.jsx';
 import BrowserPanel from './pages/BrowserPanel.jsx';
 import './styles/main.css';
 
@@ -25,7 +28,10 @@ const pages = {
   history: RunHistory,
   resultViewer: ResultViewer,
   library: WorkflowLibrary,
-  logs: Logs
+  logs: Logs,
+  prompts: PromptLibrary,
+  templates: WorkflowTemplates,
+  variables: VariableManager
 };
 
 function App() {

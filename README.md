@@ -167,3 +167,29 @@ Command 6 Status:
 - ZIP export currently creates a portable JSON bundle with a `.zip` filename unless a true ZIP archiver package is added later.
 - Workflow editing intentionally uses a plain textarea; richer editor features are planned for a later command.
 - File opening remains restricted to approved local project folders for safety.
+
+## Command 8 Status
+
+- Workflow templates added with a template gallery, built-in template seeding, template duplication, favorites, and template-to-workflow creation.
+- Prompt library added with default prompt seeding, search, favorites, duplicate/delete, prompt variable detection, and prompt copy/insert support.
+- Input form builder and dynamic run form added so workflows/templates can be run from form fields instead of only raw JSON.
+- Reusable variables system added with scoped variables, safe secret masking in UI, token copying, and variable preview support.
+- Variable picker and prompt preview panels added for workflow/prompt editing.
+- Workflow editor now supports JSON mode and visual step mode with simple add/edit/reorder/delete step controls and parallel-group insertion.
+
+### Command 8 Testing Flow
+
+1. Run `npm install` if dependencies are not installed.
+2. Run `npm run dev`.
+3. Open **Prompt Library**, seed default prompts, and create a prompt with variables such as `{{topic}}` and `{{audience}}`.
+4. Open **Workflow Templates**, seed default templates, choose a template, fill the dynamic input form, and create a workflow.
+5. Open **Variables**, create a reusable variable, and copy its `{{variable_name}}` token.
+6. Open **Workflow Editor**, switch between JSON and visual step mode, insert prompts/variables, validate, and run.
+7. Open **Run Panel**, select a saved workflow or template, fill the dynamic form, optionally save a preset, and run or queue the workflow.
+8. Check Run History, Results, Exports, and Logs to confirm existing features still work.
+
+### Command 8 Known Limitations
+
+- Visual editing is intentionally simple and uses buttons instead of drag-and-drop.
+- Secret variables are masked in the dashboard and excluded from reusable variable context by default, but deeper export-confirmation controls are planned for a future hardening command.
+- Template and prompt editing use lightweight forms and textareas rather than a full code editor.

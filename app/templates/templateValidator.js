@@ -1,0 +1,2 @@
+import { validateInputSchema } from '../shared/validation.js';
+export function validateTemplate(template={}){ const errors=[]; if(!template.name?.trim()) errors.push({field:'name',message:'Template name is required.'}); if(!template.templateJson && !template.template_json) errors.push({field:'templateJson',message:'Template JSON is required.'}); errors.push(...validateInputSchema(template.inputSchema ?? template.input_schema ?? {})); return {valid:errors.length===0,errors}; }

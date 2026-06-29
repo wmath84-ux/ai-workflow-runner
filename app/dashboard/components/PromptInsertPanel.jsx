@@ -1,0 +1,2 @@
+import React, { useEffect, useState } from 'react';
+export default function PromptInsertPanel({ onInsert }) { const [prompts,setPrompts]=useState([]); useEffect(()=>{window.appAPI.listPrompts().then(setPrompts).catch(()=>{});},[]); return <div className="card compact"><h3>Insert Prompt</h3>{prompts.slice(0,8).map(p=><button className="secondaryButton" key={p.id} onClick={()=>onInsert(p.promptText)}>{p.title}</button>)}</div>; }

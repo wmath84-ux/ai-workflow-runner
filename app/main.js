@@ -9,6 +9,11 @@ import { registerBrowserIpc } from './ipc/browser.ipc.js';
 import { registerExportIpc } from './ipc/export.ipc.js';
 import { registerLogsIpc } from './ipc/logs.ipc.js';
 import { registerFilesIpc } from './ipc/files.ipc.js';
+import { registerPromptsIpc } from './ipc/prompts.ipc.js';
+import { registerTemplatesIpc } from './ipc/templates.ipc.js';
+import { registerVariablesIpc } from './ipc/variables.ipc.js';
+import { seedDefaultPromptsIfEmpty } from './storage/prompts.js';
+import { seedDefaultTemplatesIfEmpty } from './storage/templates.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -40,6 +45,8 @@ function createMainWindow() {
 
 app.whenReady().then(() => {
   initializeDatabase();
+  seedDefaultPromptsIfEmpty();
+  seedDefaultTemplatesIfEmpty();
   registerWorkflowIpc();
   registerSettingsIpc();
   registerResultsIpc();
@@ -47,6 +54,9 @@ app.whenReady().then(() => {
   registerExportIpc();
   registerLogsIpc();
   registerFilesIpc();
+  registerPromptsIpc();
+  registerTemplatesIpc();
+  registerVariablesIpc();
   createMainWindow();
 
   app.on('activate', () => {

@@ -50,7 +50,32 @@ const appAPI = {
   showInFolder: (filePath) => ipcRenderer.invoke('files:show-in-folder', filePath),
   getProjectPath: (folderName) => ipcRenderer.invoke('files:project-path', folderName),
   listLogs: (filters) => unwrap(ipcRenderer.invoke('logs:list', filters)),
-  clearLogs: () => unwrap(ipcRenderer.invoke('logs:clear'))
+  clearLogs: () => unwrap(ipcRenderer.invoke('logs:clear')),
+
+  listPrompts: (filters) => unwrap(ipcRenderer.invoke('prompts:list', filters)),
+  createPrompt: (prompt) => unwrap(ipcRenderer.invoke('prompts:create', prompt)),
+  updatePrompt: (id, updates) => unwrap(ipcRenderer.invoke('prompts:update', id, updates)),
+  deletePrompt: (id) => unwrap(ipcRenderer.invoke('prompts:delete', id)),
+  duplicatePrompt: (id) => unwrap(ipcRenderer.invoke('prompts:duplicate', id)),
+  togglePromptFavorite: (id) => unwrap(ipcRenderer.invoke('prompts:toggle-favorite', id)),
+  seedDefaultPrompts: () => unwrap(ipcRenderer.invoke('prompts:seed-defaults')),
+  listTemplates: (filters) => unwrap(ipcRenderer.invoke('templates:list', filters)),
+  createTemplate: (template) => unwrap(ipcRenderer.invoke('templates:create', template)),
+  updateTemplate: (id, updates) => unwrap(ipcRenderer.invoke('templates:update', id, updates)),
+  deleteTemplate: (id) => unwrap(ipcRenderer.invoke('templates:delete', id)),
+  duplicateTemplate: (id) => unwrap(ipcRenderer.invoke('templates:duplicate', id)),
+  toggleTemplateFavorite: (id) => unwrap(ipcRenderer.invoke('templates:toggle-favorite', id)),
+  seedDefaultTemplates: () => unwrap(ipcRenderer.invoke('templates:seed-defaults')),
+  createWorkflowFromTemplate: (templateId, inputValues, options) => unwrap(ipcRenderer.invoke('templates:create-workflow', templateId, inputValues, options)),
+  listVariables: (filters) => unwrap(ipcRenderer.invoke('variables:list', filters)),
+  createVariable: (variable) => unwrap(ipcRenderer.invoke('variables:create', variable)),
+  updateVariable: (id, updates) => unwrap(ipcRenderer.invoke('variables:update', id, updates)),
+  deleteVariable: (id) => unwrap(ipcRenderer.invoke('variables:delete', id)),
+  previewVariableResolution: (text, context) => unwrap(ipcRenderer.invoke('variables:preview-resolution', text, context)),
+  listInputPresets: (filters) => unwrap(ipcRenderer.invoke('input-presets:list', filters)),
+  createInputPreset: (preset) => unwrap(ipcRenderer.invoke('input-presets:create', preset)),
+  updateInputPreset: (id, updates) => unwrap(ipcRenderer.invoke('input-presets:update', id, updates)),
+  deleteInputPreset: (id) => unwrap(ipcRenderer.invoke('input-presets:delete', id))
 };
 
 contextBridge.exposeInMainWorld('appAPI', appAPI);

@@ -1,10 +1,12 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import Card from '../components/Card.jsx';
 import RunLog from '../components/RunLog.jsx';
 import StepStatusList from '../components/StepStatusList.jsx';
 import ManualInterventionBox from '../components/ManualInterventionBox.jsx';
 import RunQueuePanel from '../components/RunQueuePanel.jsx';
 import ParallelGroupCard from '../components/ParallelGroupCard.jsx';
+import DynamicRunForm from '../components/DynamicRunForm.jsx';
+import VariablePreviewPanel from '../components/VariablePreviewPanel.jsx';
 
 const sampleWorkflow = {
   workflowName: 'YouTube Video Full Package',
@@ -26,6 +28,16 @@ export default function RunPanel() {
   const [browserStatus, setBrowserStatus] = useState(null);
   const [genericUrl, setGenericUrl] = useState('https://example.com');
   const [queueStatus, setQueueStatus] = useState(null);
+  const [savedWorkflows, setSavedWorkflows] = useState([]);
+  const [templates, setTemplates] = useState([]);
+  const [selectedWorkflowId, setSelectedWorkflowId] = useState('');
+  const [selectedTemplateId, setSelectedTemplateId] = useState('');
+  const [dynamicWorkflow, setDynamicWorkflow] = useState(null);
+
+  useEffect(() => {
+    window.appAPI.listWorkflows?.().then(setSavedWorkflows).catch(() => {});
+    window.appAPI.listTemplates?.().then(setTemplates).catch(() => {});
+  }, []);
 
   const parsedWorkflow = useMemo(() => {
     try { return { workflow: JSON.parse(workflowText), error: null }; }
@@ -99,6 +111,32 @@ export default function RunPanel() {
     finally { setIsRunning(false); }
   }
 
+  async function loadSavedWorkflow(id) {
+    if (!id) return;
+    const workflow = await window.appAPI.getWorkflow(id);
+    const definition = workflow?.definition ?? workflow;
+    setWorkflowText(JSON.stringify(definition, null, 2));
+    setDynamicWorkflow(definition);
+  }
+
+  async function loadTemplate(id) {
+    if (!id) return;
+    const template = templates.find((item) => item.id === id);
+    if (!template) return;
+    setDynamicWorkflow({ ...template.templateJson, inputSchema: template.inputSchema, templateId: template.id });
+  }
+
+  async function runWorkflowObject(workflow) {
+    setWorkflowText(JSON.stringify(workflow, null, 2));
+    setIsRunning(true);
+    try {
+      const result = await window.appAPI.runWorkflow(workflow);
+      setRunResult(result);
+      setLogs((current) => [...current, `Run ${result.runId} finished with status ${result.status}.`]);
+    } catch (error) { setLogs((current) => [...current, `Run failed: ${error.message}`]); }
+    finally { setIsRunning(false); }
+  }
+
   async function runCurrentWorkflow() {
     const validationResult = await validateCurrentWorkflow();
     if (!validationResult?.valid) return;
@@ -136,7 +174,23 @@ export default function RunPanel() {
         </div>
       </Card>
 
-      <Card title="Run Workflow">
+      <Card title="Run From Library or Template">
+        <p>Select a saved workflow or template, fill inputs dynamically, then run or queue.</p>
+        <div className="buttonRow">
+          <select value={selectedWorkflowId} onChange={async (event) => { setSelectedWorkflowId(event.target.value); await loadSavedWorkflow(event.target.value); }}>
+            <option value="">Saved workflow...</option>
+            {savedWorkflows.map((workflow) => <option key={workflow.id} value={workflow.id}>{workflow.name}</option>)}
+          </select>
+          <select value={selectedTemplateId} onChange={async (event) => { setSelectedTemplateId(event.target.value); await loadTemplate(event.target.value); }}>
+            <option value="">Template...</option>
+            {templates.map((template) => <option key={template.id} value={template.id}>{template.name}</option>)}
+          </select>
+        </div>
+        {dynamicWorkflow ? <DynamicRunForm workflow={dynamicWorkflow} onRun={runWorkflowObject} onPreview={(workflow) => setWorkflowText(JSON.stringify(workflow, null, 2))} /> : <div className="emptyState">Choose a workflow/template to show the dynamic input form.</div>}
+        {parsedWorkflow.workflow ? <VariablePreviewPanel text={JSON.stringify(parsedWorkflow.workflow.inputs ?? {}, null, 2)} context={parsedWorkflow.workflow.inputs ?? {}} /> : null}
+      </Card>
+
+      <Card title="Run Workflow JSON">
         <p>Paste a workflow JSON document, validate it, then execute it with the safe mock runner.</p>
         <textarea className="workflowTextarea" value={workflowText} onChange={(event) => setWorkflowText(event.target.value)} />
         <div className="buttonRow">

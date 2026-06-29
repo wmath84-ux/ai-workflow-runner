@@ -102,3 +102,56 @@ CREATE TABLE IF NOT EXISTS logs (
   raw_json TEXT,
   created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
+
+CREATE TABLE IF NOT EXISTS prompt_library (
+  id TEXT PRIMARY KEY,
+  title TEXT NOT NULL,
+  description TEXT,
+  category TEXT,
+  tags_json TEXT,
+  prompt_text TEXT NOT NULL,
+  variables_json TEXT,
+  tool_hint TEXT,
+  version INTEGER DEFAULT 1,
+  is_favorite INTEGER DEFAULT 0,
+  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS workflow_templates (
+  id TEXT PRIMARY KEY,
+  name TEXT NOT NULL,
+  description TEXT,
+  category TEXT,
+  tags_json TEXT,
+  template_json TEXT NOT NULL,
+  input_schema_json TEXT,
+  tools_json TEXT,
+  is_builtin INTEGER DEFAULT 0,
+  is_favorite INTEGER DEFAULT 0,
+  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS reusable_variables (
+  id TEXT PRIMARY KEY,
+  name TEXT NOT NULL UNIQUE,
+  label TEXT,
+  description TEXT,
+  value TEXT,
+  type TEXT DEFAULT 'text',
+  scope TEXT DEFAULT 'global',
+  is_secret INTEGER DEFAULT 0,
+  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS workflow_input_presets (
+  id TEXT PRIMARY KEY,
+  workflow_id TEXT,
+  template_id TEXT,
+  name TEXT NOT NULL,
+  values_json TEXT NOT NULL,
+  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+);

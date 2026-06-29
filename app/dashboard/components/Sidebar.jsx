@@ -3,6 +3,9 @@ import React from 'react';
 const navItems = [
   ['home', 'Home'],
   ['library', 'Workflow Library'],
+  ['templates', 'Workflow Templates'],
+  ['prompts', 'Prompt Library'],
+  ['variables', 'Variables'],
   ['workflows', 'Workflow List'],
   ['editor', 'Workflow Editor'],
   ['run', 'Run Panel'],

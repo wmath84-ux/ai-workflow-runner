@@ -1,0 +1,2 @@
+import { detectPromptVariables } from './promptFormatter.js';
+export function validatePrompt(prompt = {}) { const errors=[]; if(!prompt.title?.trim()) errors.push({field:'title',message:'Prompt title is required.'}); if(!prompt.promptText?.trim()) errors.push({field:'promptText',message:'Prompt text is required.'}); return { valid: errors.length===0, errors, variables: detectPromptVariables(prompt.promptText ?? '') }; }

@@ -1,0 +1,2 @@
+import React, { useEffect, useState } from 'react';
+export default function VariablePicker({ variables = [], onInsert }) { const [saved,setSaved]=useState([]); useEffect(()=>{window.appAPI?.listVariables?.().then(setSaved).catch(()=>{});},[]); const all=[...variables.map(name=>({name,scope:'workflow'})),...saved]; return <div className="card compact"><h3>Variables</h3>{all.map(v=><button className="secondaryButton" key={`${v.scope}-${v.name}`} onClick={()=>onInsert?.(`{{${v.name}}}`)}>{`{{${v.name}}}`}</button>)}</div>; }

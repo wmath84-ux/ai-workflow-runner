@@ -1,6 +1,7 @@
 import { extractVariables } from './variableResolver.js';
 import { flattenWorkflowSteps } from './workflowPlanner.js';
 import { validateDependencyGraph } from './dependencyResolver.js';
+import { SYSTEM_VARIABLE_NAMES, validateInputSchema } from '../shared/validation.js';
 
 const IMPLEMENTED_TOOLS = new Set(['mock', 'chatgpt', 'gemini', 'generic']);
 const REGISTERED_UNIMPLEMENTED_TOOLS = new Set(['claude', 'perplexity']);
@@ -34,11 +35,15 @@ export function validateWorkflow(workflow) {
   if (!workflow.workflowName || typeof workflow.workflowName !== 'string') add(errors, 'workflowName', 'Workflow name is required.');
   if (!isPlainObject(workflow.inputs)) add(errors, 'inputs', 'Inputs must be an object.');
   if (!Array.isArray(workflow.steps) || workflow.steps.length === 0) add(errors, 'steps', 'Steps must be a non-empty array.');
+  if (workflow.inputSchema !== undefined) errors.push(...validateInputSchema(workflow.inputSchema));
+  for (const inputName of Object.keys(isPlainObject(workflow.inputs) ? workflow.inputs : {})) {
+    if (SYSTEM_VARIABLE_NAMES.has(inputName)) add(errors, `inputs.${inputName}`, 'Workflow input conflicts with a reserved system variable.');
+  }
   if (workflow.settings?.maxConcurrency !== undefined && (!Number.isFinite(Number(workflow.settings.maxConcurrency)) || Number(workflow.settings.maxConcurrency) <= 0)) add(errors, 'settings.maxConcurrency', 'settings.maxConcurrency must be a positive number.');
 
   const stepIds = new Set();
   const saveAsKeys = new Set();
-  const availableVariables = new Set(Object.keys(isPlainObject(workflow.inputs) ? workflow.inputs : {}));
+  const availableVariables = new Set([...Object.keys(isPlainObject(workflow.inputs) ? workflow.inputs : {}), ...SYSTEM_VARIABLE_NAMES]);
 
   (workflow.steps ?? []).forEach((unit, unitIndex) => {
     const field = `steps[${unitIndex}]`;
@@ -57,12 +62,16 @@ export function validateWorkflow(workflow) {
         if (child.id && stepIds.has(child.id)) add(errors, `${childField}.id`, `Duplicate step id "${child.id}" is not allowed.`);
         if (child.id) stepIds.add(child.id);
         if (child.saveAs && saveAsKeys.has(child.saveAs)) add(errors, `${childField}.saveAs`, `Duplicate saveAs key "${child.saveAs}" is not allowed.`);
+        if (child.saveAs && SYSTEM_VARIABLE_NAMES.has(child.saveAs)) add(errors, `${childField}.saveAs`, 'saveAs conflicts with a reserved system variable.');
+        if (child.saveAs && Object.prototype.hasOwnProperty.call(workflow.inputs ?? {}, child.saveAs)) add(errors, `${childField}.saveAs`, 'saveAs must not conflict with a workflow input name.');
         for (const variable of extractVariables(child.prompt ?? '')) if (!groupStartVariables.has(variable)) add(errors, `${childField}.prompt`, `Variable {{${variable}}} is not available inside the same parallel group.`);
       });
       for (const child of unit.steps ?? []) if (child.saveAs) { saveAsKeys.add(child.saveAs); availableVariables.add(child.saveAs); }
     } else {
       validateSingleStep(unit, field, errors);
       if (unit.saveAs && saveAsKeys.has(unit.saveAs)) add(errors, `${field}.saveAs`, `Duplicate saveAs key "${unit.saveAs}" is not allowed.`);
+      if (unit.saveAs && SYSTEM_VARIABLE_NAMES.has(unit.saveAs)) add(errors, `${field}.saveAs`, 'saveAs conflicts with a reserved system variable.');
+      if (unit.saveAs && Object.prototype.hasOwnProperty.call(workflow.inputs ?? {}, unit.saveAs)) add(errors, `${field}.saveAs`, 'saveAs must not conflict with a workflow input name.');
       for (const variable of extractVariables(unit.prompt ?? '')) if (!availableVariables.has(variable)) add(errors, `${field}.prompt`, `Variable {{${variable}}} is missing or not available before this step.`);
       if (unit.saveAs) { saveAsKeys.add(unit.saveAs); availableVariables.add(unit.saveAs); }
     }
