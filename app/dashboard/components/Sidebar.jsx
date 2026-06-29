@@ -5,6 +5,7 @@ const navItems = [
   ['workflows', 'Workflow List'],
   ['editor', 'Workflow Editor'],
   ['run', 'Run Panel'],
+  ['browser', 'Browser Panel'],
   ['results', 'Results'],
   ['settings', 'Settings']
 ];

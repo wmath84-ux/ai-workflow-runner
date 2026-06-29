@@ -19,7 +19,18 @@ const appAPI = {
   getWorkflow: (workflowId) => unwrap(ipcRenderer.invoke('workflow:get', workflowId)),
   listRuns: () => unwrap(ipcRenderer.invoke('runs:list')),
   getRun: (runId) => unwrap(ipcRenderer.invoke('runs:get', runId)),
-  listResults: () => unwrap(ipcRenderer.invoke('results:list'))
+  listResults: () => unwrap(ipcRenderer.invoke('results:list')),
+  launchBrowser: () => unwrap(ipcRenderer.invoke('browser:launch')),
+  closeBrowser: () => unwrap(ipcRenderer.invoke('browser:close')),
+  getBrowserStatus: () => unwrap(ipcRenderer.invoke('browser:status')),
+  openUrl: (url) => unwrap(ipcRenderer.invoke('browser:open-url', url)),
+  openTool: (toolName) => unwrap(ipcRenderer.invoke('browser:open-tool', toolName)),
+  listBrowserTabs: () => unwrap(ipcRenderer.invoke('browser:list-tabs')),
+  closeBrowserTab: (urlPart) => unwrap(ipcRenderer.invoke('browser:close-tab', urlPart)),
+  bringBrowserTabToFront: (urlPart) => unwrap(ipcRenderer.invoke('browser:bring-tab-front', urlPart)),
+  getBrowserProfileInfo: () => unwrap(ipcRenderer.invoke('browser:profile-info')),
+  clearBrowserProfile: () => unwrap(ipcRenderer.invoke('browser:clear-profile')),
+  listConnectors: () => unwrap(ipcRenderer.invoke('connectors:list'))
 };
 
 contextBridge.exposeInMainWorld('appAPI', appAPI);

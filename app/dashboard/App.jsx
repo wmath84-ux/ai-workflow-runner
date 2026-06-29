@@ -7,6 +7,7 @@ import WorkflowEditor from './pages/WorkflowEditor.jsx';
 import RunPanel from './pages/RunPanel.jsx';
 import Results from './pages/Results.jsx';
 import Settings from './pages/Settings.jsx';
+import BrowserPanel from './pages/BrowserPanel.jsx';
 import './styles/main.css';
 
 const pages = {
@@ -15,7 +16,8 @@ const pages = {
   editor: WorkflowEditor,
   run: RunPanel,
   results: Results,
-  settings: Settings
+  settings: Settings,
+  browser: BrowserPanel
 };
 
 function App() {

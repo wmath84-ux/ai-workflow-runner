@@ -1,20 +1,25 @@
 export const perplexityConnector = {
   name: 'perplexity',
-  startUrl: '',
+  label: 'Perplexity',
+  startUrl: 'https://www.perplexity.ai',
+
   async open(page) {
-    // TODO: Open perplexity in a Playwright page without login or bypass automation.
+    await page.goto(this.startUrl, { waitUntil: 'domcontentloaded' });
   },
+
   async fillPrompt(page, prompt) {
-    // TODO: Fill prompt once safe selectors are defined.
+    throw new Error('Prompt filling is not implemented yet. This will be added in Command 4.');
   },
+
   async send(page) {
-    // TODO: Send the prompt once connector behavior is implemented.
+    throw new Error('Sending is not implemented yet. This will be added in Command 4.');
   },
+
   async waitForDone(page) {
-    // TODO: Wait for completion using connector-specific signals.
+    throw new Error('Response waiting is not implemented yet. This will be added in Command 4.');
   },
+
   async extractAnswer(page) {
-    // TODO: Extract answer text when connector implementation is added.
-    return '';
+    throw new Error('Answer extraction is not implemented yet. This will be added in Command 4.');
   }
 };

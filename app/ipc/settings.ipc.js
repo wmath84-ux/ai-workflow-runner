@@ -1,10 +1,20 @@
 import { ipcMain, app } from 'electron';
+import { getDefaultProfilePath } from '../browser/profileManager.js';
 
 let settings = {
   theme: 'system',
   outputDirectory: 'outputs',
-  browserProfileDirectory: 'browser-profile'
+  browserProfileDirectory: '',
+  defaultWaitTimeout: 30000,
+  retryCount: 1
 };
+
+export function getCurrentSettings() {
+  return {
+    ...settings,
+    resolvedBrowserProfileDirectory: settings.browserProfileDirectory || getDefaultProfilePath()
+  };
+}
 
 export function registerSettingsIpc() {
   ipcMain.handle('settings:get-app-info', () => ({
@@ -13,9 +23,9 @@ export function registerSettingsIpc() {
     platform: process.platform
   }));
 
-  ipcMain.handle('settings:get', () => settings);
+  ipcMain.handle('settings:get', () => getCurrentSettings());
   ipcMain.handle('settings:save', (_event, nextSettings) => {
     settings = { ...settings, ...nextSettings };
-    return settings;
+    return getCurrentSettings();
   });
 }

@@ -5,6 +5,7 @@ import { initializeDatabase } from './storage/db.js';
 import { registerWorkflowIpc } from './ipc/workflow.ipc.js';
 import { registerSettingsIpc } from './ipc/settings.ipc.js';
 import { registerResultsIpc } from './ipc/results.ipc.js';
+import { registerBrowserIpc } from './ipc/browser.ipc.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -39,6 +40,7 @@ app.whenReady().then(() => {
   registerWorkflowIpc();
   registerSettingsIpc();
   registerResultsIpc();
+  registerBrowserIpc();
   createMainWindow();
 
   app.on('activate', () => {

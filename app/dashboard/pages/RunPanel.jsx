@@ -20,11 +20,26 @@ export default function RunPanel() {
   const [runResult, setRunResult] = useState(null);
   const [logs, setLogs] = useState([]);
   const [isRunning, setIsRunning] = useState(false);
+  const [browserStatus, setBrowserStatus] = useState(null);
 
   const parsedWorkflow = useMemo(() => {
     try { return { workflow: JSON.parse(workflowText), error: null }; }
     catch (error) { return { workflow: null, error: `Invalid JSON: ${error.message}` }; }
   }, [workflowText]);
+
+  async function refreshBrowserStatus() {
+    try { setBrowserStatus(await window.appAPI.getBrowserStatus()); } catch (error) { setLogs((current) => [...current, error.message]); }
+  }
+
+  async function openTool(toolName) {
+    try {
+      await window.appAPI.openTool(toolName);
+      await refreshBrowserStatus();
+      setLogs((current) => [...current, `${toolName} opened for manual browser preparation.`]);
+    } catch (error) {
+      setLogs((current) => [...current, error.message]);
+    }
+  }
 
   async function validateCurrentWorkflow() {
     setRunResult(null);
@@ -60,6 +75,18 @@ export default function RunPanel() {
 
   return (
     <div className="grid twoColumn runPanelGrid">
+      <Card title="Browser Preparation">
+        <p>Browser automation is not connected to workflow execution yet, but you can prepare manual login sessions now.</p>
+        <p><strong>Status:</strong> {browserStatus?.status ?? 'unknown'} · <strong>Tabs:</strong> {browserStatus?.pages ?? 0}</p>
+        <div className="buttonRow">
+          <button className="secondaryButton" onClick={async () => { await window.appAPI.launchBrowser(); await refreshBrowserStatus(); }}>Launch Browser</button>
+          <button className="secondaryButton" onClick={() => openTool('chatgpt')}>Open ChatGPT</button>
+          <button className="secondaryButton" onClick={() => openTool('gemini')}>Open Gemini</button>
+          <button className="secondaryButton" onClick={() => openTool('claude')}>Open Claude</button>
+          <button className="secondaryButton" onClick={() => openTool('perplexity')}>Open Perplexity</button>
+        </div>
+      </Card>
+
       <Card title="Run Workflow">
         <p>Paste a workflow JSON document, validate it, then execute it with the safe mock runner.</p>
         <textarea className="workflowTextarea" value={workflowText} onChange={(event) => setWorkflowText(event.target.value)} />

@@ -4,7 +4,7 @@ AI Workflow Runner is a desktop app foundation for running structured AI workflo
 
 ## Current status
 
-Command 2 adds the first real internal workflow layer: workflow JSON validation, variable injection, sequential mock step execution, step output saving, run records, and checkpoint persistence. The project still does **not** implement real ChatGPT, Gemini, Claude, Perplexity, browser automation, login, captcha, rate-limit, or bypass logic.
+Command 3 adds the Playwright Browser Manager, a persistent Chromium profile, manual login support, browser status, and tool tab controls. Workflow execution still uses the mock runner; real prompt sending and answer extraction are not implemented yet.
 
 ## Commands
 
@@ -33,15 +33,36 @@ npm run electron:build
 
 Step outputs are written under `outputs/<safe-workflow-name>/<runId>/` as Markdown and JSON files. Successful runs also write `final-output.md`.
 
+
+## Browser setup and manual login
+
+1. Run `npm install`.
+2. If Chromium is missing, run `npx playwright install chromium`.
+3. Start the app with `npm run dev`.
+4. Open the Browser Panel.
+5. Click **Launch Browser**.
+6. Open ChatGPT, Gemini, Claude, or Perplexity from the manual login cards.
+7. Log in manually in the Chromium window.
+8. Close the app and reopen it.
+9. Launch the browser again; login sessions should remain saved because the persistent `browser-profile/` directory is reused.
+
+Command 3 Status:
+
+- Browser Manager added.
+- Persistent Chromium profile added.
+- Manual login support added.
+- Tool tabs can be opened, focused, listed, and closed.
+- Real prompt sending is not implemented yet.
+
 ## Folder structure
 
 - `app/main.js` — Electron main process and lifecycle handling.
 - `app/preload.js` — secure context bridge exposed to the React dashboard.
-- `app/dashboard/` — React starter UI with sidebar navigation, validation, run panel, and result pages.
+- `app/dashboard/` — React starter UI with sidebar navigation, validation, run panel, browser panel, and result pages.
 - `app/ipc/` — IPC handlers for settings, workflows, runs, and results.
 - `app/storage/` — SQLite schema and helper modules for workflows, runs, checkpoints, and results.
 - `app/runner/` — workflow validator, variable resolver, sequential engine, checkpoint manager, retry wrapper, mock runner, and output saver.
-- `app/browser/` — placeholder Playwright browser/session modules.
+- `app/browser/` — Playwright persistent Chromium browser manager, profile utilities, tab manager, and browser state helpers.
 - `app/connectors/` — placeholder connector contracts for future AI web connectors.
 - `app/shared/` — shared constants, path helpers, and logging.
 - `workflows/` — sample workflow JSON files.
@@ -50,8 +71,8 @@ Step outputs are written under `outputs/<safe-workflow-name>/<runId>/` as Markdo
 
 ## Next planned parts
 
-1. Browser manager.
-2. Playwright persistent profile.
-3. Manual login window.
-4. Real connector integration after safe browser/profile setup.
+1. ChatGPT connector prompt fill.
+2. ChatGPT prompt send.
+3. Response wait and extraction.
+4. Connector-safe error handling.
 5. Full checkpoint resume execution.
