@@ -5,9 +5,9 @@
   "type": "module",
   "main": "app/main.js",
   "scripts": {
-    "dev": "concurrently -k \"vite\" \"wait-on tcp:5173 && cross-env VITE_DEV_SERVER_URL=http://localhost:5173 electron .\"",
+    "dev": "concurrently -k \"vite --host 127.0.0.1\" \"wait-on http://127.0.0.1:5173 && cross-env VITE_DEV_SERVER_URL=http://127.0.0.1:5173 electron --no-sandbox --disable-gpu --disable-dev-shm-usage .\"",
     "build": "vite build",
-    "start": "electron .",
+    "start": "electron --no-sandbox --disable-gpu --disable-dev-shm-usage .",
     "electron:dev": "npm run dev",
     "electron:build": "npm run dist",
     "pack": "npm run build && electron-builder --dir",
@@ -17,14 +17,15 @@
     "qa:check": "node app/build/qaCheck.js"
   },
   "dependencies": {
-    "better-sqlite3": "latest",
-    "electron": "latest",
+    "better-sqlite3": "9.6.0",
+    "electron": "30.5.1",
     "playwright": "latest",
     "react": "latest",
     "react-dom": "latest",
     "vite": "latest"
   },
   "devDependencies": {
+    "@electron/rebuild": "latest",
     "@vitejs/plugin-react": "latest",
     "concurrently": "latest",
     "cross-env": "latest",
