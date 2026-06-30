@@ -7,11 +7,22 @@ import { getCurrentSettings } from './settings.ipc.js';
 
 function success(data) { return { ok: true, data }; }
 function failure(error) { return { ok: false, error: error?.message ?? String(error ?? 'Unknown browser error') }; }
-async function getConfiguredProfilePath() { const settings = await getCurrentSettings(); return resolveProfilePath(settings.browser?.profilePath ?? settings.browserProfileDirectory ?? ''); }
+function browserError(status) {
+  return status?.lastError?.message ?? status?.lastError?.error ?? status?.lastError ?? `Browser is ${status?.status ?? 'not running'}`;
+}
+async function getConfiguredProfilePath() {
+  const settings = await getCurrentSettings();
+  return resolveProfilePath(settings.browser?.profilePath ?? settings.browserProfileDirectory ?? '');
+}
+async function launchOrThrow() {
+  const status = await launchBrowser({ profilePath: await getConfiguredProfilePath() });
+  if (!status?.running) throw new Error(browserError(status));
+  return status;
+}
 
 export function registerBrowserIpc() {
   ipcMain.handle('browser:launch', async () => {
-    try { return success(await launchBrowser({ profilePath: await getConfiguredProfilePath() })); } catch (error) { return failure(error); }
+    try { return success(await launchOrThrow()); } catch (error) { return failure(error); }
   });
   ipcMain.handle('browser:close', async () => {
     try { return success(await closeBrowser()); } catch (error) { return failure(error); }
@@ -24,7 +35,7 @@ export function registerBrowserIpc() {
   });
   ipcMain.handle('browser:open-tool', async (_event, toolName) => {
     try {
-      await launchBrowser({ profilePath: await getConfiguredProfilePath() });
+      await launchOrThrow();
       return success(await openToolTab(toolName));
     } catch (error) { return failure(error); }
   });
